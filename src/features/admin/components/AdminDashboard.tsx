@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
-import { Word, Category, DifficultyWeights } from "@/types";
+import { Word, Category, DifficultyWeights, InputType } from "@/types";
 import {
   getWords,
   addWord,
@@ -40,6 +40,7 @@ export function AdminDashboard() {
   const handleSaveWord = (data: {
     text: string;
     reading: string;
+    inputType: InputType;
     categoryId: string;
     weights: DifficultyWeights;
   }) => {

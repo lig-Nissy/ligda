@@ -1,4 +1,4 @@
-import { Word, Category, DEFAULT_WEIGHTS, Difficulty } from "@/types";
+import { Word, Category, DEFAULT_WEIGHTS, Difficulty, InputType } from "@/types";
 
 const WORDS_KEY = "typing_game_words";
 const CATEGORIES_KEY = "typing_game_categories";
@@ -12,6 +12,13 @@ const DEFAULT_CATEGORIES: Category[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: "it",
+    name: "IT用語",
+    description: "プログラミング・IT関連の用語",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 // デフォルトワード
@@ -20,6 +27,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "1",
     text: "寿司",
     reading: "すし",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 2, normal: 1, hard: 0 },
     createdAt: new Date().toISOString(),
@@ -29,6 +37,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "2",
     text: "タイピング",
     reading: "たいぴんぐ",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 2, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -38,6 +47,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "3",
     text: "練習",
     reading: "れんしゅう",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -47,6 +57,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "4",
     text: "キーボード",
     reading: "きーぼーど",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 2, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -56,6 +67,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "5",
     text: "プログラミング",
     reading: "ぷろぐらみんぐ",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 0, normal: 1, hard: 2 },
     createdAt: new Date().toISOString(),
@@ -65,6 +77,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "6",
     text: "こんにちは",
     reading: "こんにちは",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 2, normal: 1, hard: 0 },
     createdAt: new Date().toISOString(),
@@ -74,6 +87,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "7",
     text: "ありがとう",
     reading: "ありがとう",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 2, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -83,6 +97,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "8",
     text: "日本語",
     reading: "にほんご",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -92,6 +107,7 @@ const DEFAULT_WORDS: Word[] = [
     id: "9",
     text: "東京",
     reading: "とうきょう",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
@@ -101,8 +117,60 @@ const DEFAULT_WORDS: Word[] = [
     id: "10",
     text: "富士山",
     reading: "ふじさん",
+    inputType: "hiragana",
     categoryId: "default",
     weights: { easy: 1, normal: 1, hard: 1 },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  // IT用語（アルファベット）
+  {
+    id: "11",
+    text: "container",
+    reading: "container",
+    inputType: "alphabet",
+    categoryId: "it",
+    weights: { easy: 0, normal: 1, hard: 2 },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "12",
+    text: "function",
+    reading: "function",
+    inputType: "alphabet",
+    categoryId: "it",
+    weights: { easy: 1, normal: 2, hard: 1 },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "13",
+    text: "variable",
+    reading: "variable",
+    inputType: "alphabet",
+    categoryId: "it",
+    weights: { easy: 1, normal: 2, hard: 1 },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "14",
+    text: "component",
+    reading: "component",
+    inputType: "alphabet",
+    categoryId: "it",
+    weights: { easy: 0, normal: 1, hard: 2 },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "15",
+    text: "interface",
+    reading: "interface",
+    inputType: "alphabet",
+    categoryId: "it",
+    weights: { easy: 0, normal: 1, hard: 2 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -112,13 +180,19 @@ function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
 
-// 既存データにweightsがない場合のマイグレーション
+// 既存データのマイグレーション
 function migrateWords(words: Word[]): Word[] {
   return words.map((word) => {
-    if (!word.weights) {
-      return { ...word, weights: { ...DEFAULT_WEIGHTS } };
+    const migrated = { ...word };
+    // weightsがない場合
+    if (!migrated.weights) {
+      migrated.weights = { ...DEFAULT_WEIGHTS };
     }
-    return word;
+    // inputTypeがない場合（既存データはひらがな）
+    if (!migrated.inputType) {
+      migrated.inputType = "hiragana" as InputType;
+    }
+    return migrated;
   });
 }
 
@@ -147,6 +221,7 @@ export function addWord(word: Omit<Word, "id" | "createdAt" | "updatedAt">): Wor
   const newWord: Word = {
     ...word,
     weights: word.weights || { ...DEFAULT_WEIGHTS },
+    inputType: word.inputType || "hiragana",
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

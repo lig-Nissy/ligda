@@ -21,11 +21,15 @@ interface TypingState {
 
 // ワードの制限時間を計算
 function calculateWordTimeLimit(
-  reading: string,
+  word: Word,
   config: (typeof DIFFICULTY_CONFIGS)[keyof typeof DIFFICULTY_CONFIGS]
 ): number {
-  const romajiLength = hiraganaToRomaji(reading).length;
-  const calculatedTime = romajiLength * config.baseWordTime;
+  // アルファベットの場合はそのまま文字数、ひらがなの場合はローマ字変換後の文字数
+  const inputLength =
+    word.inputType === "alphabet"
+      ? word.reading.length
+      : hiraganaToRomaji(word.reading).length;
+  const calculatedTime = inputLength * config.baseWordTime;
   return Math.min(Math.max(calculatedTime, config.minWordTime), config.maxWordTime);
 }
 
@@ -83,7 +87,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   const startWordTimer = useCallback(
     (word: Word) => {
       clearWordTimer();
-      const timeLimit = calculateWordTimeLimit(word.reading, config);
+      const timeLimit = calculateWordTimeLimit(word, config);
       setWordTimeLimit(timeLimit);
       setWordTimeLeft(timeLimit);
       wordStartTimeRef.current = Date.now();
@@ -125,13 +129,20 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         word = words[nextIndex];
       }
 
-      const patterns = hiraganaToRomajiPatterns(word.reading);
+      // アルファベットの場合は1文字ずつのパターンとして扱う
+      const patterns =
+        word.inputType === "alphabet"
+          ? word.reading.split("").map((char) => [char])
+          : hiraganaToRomajiPatterns(word.reading);
+      const displayRomaji =
+        word.inputType === "alphabet" ? word.reading : hiraganaToRomaji(word.reading);
+
       setTypingState({
         patterns,
         currentPatternIndex: 0,
         currentInput: "",
         typedRomaji: "",
-        displayRomaji: hiraganaToRomaji(word.reading),
+        displayRomaji,
       });
 
       if (status === "playing") {
@@ -175,13 +186,22 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     setStatus("ready");
 
     const firstWord = shuffled[0];
-    const patterns = hiraganaToRomajiPatterns(firstWord.reading);
+    // アルファベットの場合は1文字ずつのパターンとして扱う
+    const patterns =
+      firstWord.inputType === "alphabet"
+        ? firstWord.reading.split("").map((char) => [char])
+        : hiraganaToRomajiPatterns(firstWord.reading);
+    const displayRomaji =
+      firstWord.inputType === "alphabet"
+        ? firstWord.reading
+        : hiraganaToRomaji(firstWord.reading);
+
     setTypingState({
       patterns,
       currentPatternIndex: 0,
       currentInput: "",
       typedRomaji: "",
-      displayRomaji: hiraganaToRomaji(firstWord.reading),
+      displayRomaji,
     });
   }, [difficulty, categoryId, config.timeLimit, shuffleWords, clearWordTimer]);
 

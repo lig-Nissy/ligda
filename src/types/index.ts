@@ -8,11 +8,15 @@ export interface DifficultyWeights {
   hard: number;
 }
 
+// 入力タイプ
+export type InputType = "hiragana" | "alphabet";
+
 // ワード（タイピング対象）
 export interface Word {
   id: string;
-  text: string; // 表示テキスト（日本語）
-  reading: string; // ふりがな（ひらがな）
+  text: string; // 表示テキスト
+  reading: string; // ふりがな（ひらがな）またはアルファベット
+  inputType: InputType; // 入力タイプ
   categoryId: string;
   weights: DifficultyWeights; // 難易度別の重み
   createdAt: string;

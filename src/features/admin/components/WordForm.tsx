@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Word, Category, DifficultyWeights, DEFAULT_WEIGHTS } from "@/types";
+import { Word, Category, DifficultyWeights, DEFAULT_WEIGHTS, InputType } from "@/types";
 
 interface WordFormProps {
   word?: Word | null;
@@ -9,6 +9,7 @@ interface WordFormProps {
   onSave: (data: {
     text: string;
     reading: string;
+    inputType: InputType;
     categoryId: string;
     weights: DifficultyWeights;
   }) => void;
@@ -18,6 +19,7 @@ interface WordFormProps {
 export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) {
   const [text, setText] = useState("");
   const [reading, setReading] = useState("");
+  const [inputType, setInputType] = useState<InputType>("hiragana");
   const [categoryId, setCategoryId] = useState("default");
   const [weights, setWeights] = useState<DifficultyWeights>({ ...DEFAULT_WEIGHTS });
 
@@ -25,11 +27,13 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
     if (word) {
       setText(word.text);
       setReading(word.reading);
+      setInputType(word.inputType || "hiragana");
       setCategoryId(word.categoryId);
       setWeights(word.weights || { ...DEFAULT_WEIGHTS });
     } else {
       setText("");
       setReading("");
+      setInputType("hiragana");
       setCategoryId("default");
       setWeights({ ...DEFAULT_WEIGHTS });
     }
@@ -48,7 +52,7 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
       alert("テキストとふりがなは必須です");
       return;
     }
-    onSave({ text: text.trim(), reading: reading.trim(), categoryId, weights });
+    onSave({ text: text.trim(), reading: reading.trim(), inputType, categoryId, weights });
   };
 
   return (
@@ -66,19 +70,55 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
         />
       </div>
 
+      {/* 入力タイプ選択 */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          入力タイプ
+        </label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="inputType"
+              value="hiragana"
+              checked={inputType === "hiragana"}
+              onChange={() => setInputType("hiragana")}
+              className="w-4 h-4 text-orange-500"
+            />
+            <span className="text-zinc-700 dark:text-zinc-300">ひらがな</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="inputType"
+              value="alphabet"
+              checked={inputType === "alphabet"}
+              onChange={() => setInputType("alphabet")}
+              className="w-4 h-4 text-orange-500"
+            />
+            <span className="text-zinc-700 dark:text-zinc-300">アルファベット</span>
+          </label>
+        </div>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          ひらがな: 日本語をローマ字入力 / アルファベット: 英単語をそのまま入力
+        </p>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          ふりがな（ひらがな）
+          {inputType === "hiragana" ? "ふりがな（ひらがな）" : "入力テキスト（アルファベット）"}
         </label>
         <input
           type="text"
           value={reading}
           onChange={(e) => setReading(e.target.value)}
-          placeholder="例: すし"
+          placeholder={inputType === "hiragana" ? "例: すし" : "例: container"}
           className="w-full p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
         />
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-          ※ひらがなで入力してください
+          {inputType === "hiragana"
+            ? "※ひらがなで入力してください"
+            : "※小文字のアルファベットで入力してください"}
         </p>
       </div>
 

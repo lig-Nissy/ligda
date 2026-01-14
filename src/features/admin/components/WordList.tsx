@@ -32,7 +32,10 @@ export function WordList({ words, categories, onEdit, onDelete }: WordListProps)
               テキスト
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              ふりがな
+              入力
+            </th>
+            <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              タイプ
             </th>
             <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
               カテゴリ
@@ -58,6 +61,17 @@ export function WordList({ words, categories, onEdit, onDelete }: WordListProps)
                 </td>
                 <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
                   {word.reading}
+                </td>
+                <td className="py-3 px-4">
+                  <span
+                    className={`px-2 py-1 text-xs rounded ${
+                      word.inputType === "alphabet"
+                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                        : "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+                    }`}
+                  >
+                    {word.inputType === "alphabet" ? "ABC" : "あ"}
+                  </span>
                 </td>
                 <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
                   <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">
