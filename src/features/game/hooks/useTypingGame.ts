@@ -19,6 +19,16 @@ interface TypingState {
   displayRomaji: string;
 }
 
+// ワードの制限時間を計算
+function calculateWordTimeLimit(
+  reading: string,
+  config: (typeof DIFFICULTY_CONFIGS)[keyof typeof DIFFICULTY_CONFIGS]
+): number {
+  const romajiLength = hiraganaToRomaji(reading).length;
+  const calculatedTime = romajiLength * config.baseWordTime;
+  return Math.min(Math.max(calculatedTime, config.minWordTime), config.maxWordTime);
+}
+
 export function useTypingGame(difficulty: Difficulty, categoryId: string | null) {
   const config = DIFFICULTY_CONFIGS[difficulty];
 
@@ -32,6 +42,19 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   const [correctCount, setCorrectCount] = useState(0);
   const [missCount, setMissCount] = useState(0);
   const [completedWords, setCompletedWords] = useState(0);
+  const [skippedWords, setSkippedWords] = useState(0);
+
+  // コンボ関連
+  const [combo, setCombo] = useState(0); // 連続正解数（ミスなしでワードクリア）
+  const [showBonusEffect, setShowBonusEffect] = useState(false);
+  const [totalBonusTime, setTotalBonusTime] = useState(0);
+  const hadMissInCurrentWord = useRef(false);
+
+  // ワードタイマー関連
+  const [wordTimeLeft, setWordTimeLeft] = useState(0);
+  const [wordTimeLimit, setWordTimeLimit] = useState(0);
+  const wordTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const wordStartTimeRef = useRef<number>(0);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
@@ -48,6 +71,83 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     return shuffled;
   }, []);
 
+  // ワードタイマーをクリア
+  const clearWordTimer = useCallback(() => {
+    if (wordTimerRef.current) {
+      clearInterval(wordTimerRef.current);
+      wordTimerRef.current = null;
+    }
+  }, []);
+
+  // ワードタイマーを開始
+  const startWordTimer = useCallback(
+    (word: Word) => {
+      clearWordTimer();
+      const timeLimit = calculateWordTimeLimit(word.reading, config);
+      setWordTimeLimit(timeLimit);
+      setWordTimeLeft(timeLimit);
+      wordStartTimeRef.current = Date.now();
+
+      wordTimerRef.current = setInterval(() => {
+        const elapsed = Date.now() - wordStartTimeRef.current;
+        const remaining = Math.max(0, timeLimit - elapsed);
+        setWordTimeLeft(remaining);
+
+        if (remaining <= 0) {
+          clearWordTimer();
+        }
+      }, 50);
+    },
+    [config, clearWordTimer]
+  );
+
+  // 次のワードへ（タイムアウト時も使用）
+  const nextWord = useCallback(
+    (isTimeout = false) => {
+      if (isTimeout) {
+        setSkippedWords((c) => c + 1);
+        setCombo(0); // タイムアウトでコンボリセット
+      }
+
+      // 次のワードのためにミスフラグをリセット
+      hadMissInCurrentWord.current = false;
+
+      const nextIndex = currentWordIndex + 1;
+      let word: Word;
+
+      if (nextIndex >= words.length) {
+        const shuffled = shuffleWords(words);
+        setWords(shuffled);
+        setCurrentWordIndex(0);
+        word = shuffled[0];
+      } else {
+        setCurrentWordIndex(nextIndex);
+        word = words[nextIndex];
+      }
+
+      const patterns = hiraganaToRomajiPatterns(word.reading);
+      setTypingState({
+        patterns,
+        currentPatternIndex: 0,
+        currentInput: "",
+        typedRomaji: "",
+        displayRomaji: hiraganaToRomaji(word.reading),
+      });
+
+      if (status === "playing") {
+        startWordTimer(word);
+      }
+    },
+    [currentWordIndex, words, shuffleWords, status, startWordTimer]
+  );
+
+  // ワードタイムアウト処理
+  useEffect(() => {
+    if (status === "playing" && wordTimeLeft <= 0 && wordTimeLimit > 0) {
+      nextWord(true);
+    }
+  }, [wordTimeLeft, wordTimeLimit, status, nextWord]);
+
   // ゲーム初期化
   const initGame = useCallback(() => {
     const allWords = getWordsByCategory(categoryId);
@@ -56,6 +156,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       return;
     }
 
+    clearWordTimer();
     const shuffled = shuffleWords(allWords);
     setWords(shuffled);
     setCurrentWordIndex(0);
@@ -64,9 +165,15 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     setCorrectCount(0);
     setMissCount(0);
     setCompletedWords(0);
+    setSkippedWords(0);
+    setCombo(0);
+    setTotalBonusTime(0);
+    setShowBonusEffect(false);
+    hadMissInCurrentWord.current = false;
+    setWordTimeLeft(0);
+    setWordTimeLimit(0);
     setStatus("ready");
 
-    // 最初のワードのタイピング状態を初期化
     const firstWord = shuffled[0];
     const patterns = hiraganaToRomajiPatterns(firstWord.reading);
     setTypingState({
@@ -76,7 +183,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       typedRomaji: "",
       displayRomaji: hiraganaToRomaji(firstWord.reading),
     });
-  }, [categoryId, config.timeLimit, shuffleWords]);
+  }, [categoryId, config.timeLimit, shuffleWords, clearWordTimer]);
 
   // ゲーム開始
   const startGame = useCallback(() => {
@@ -92,7 +199,11 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         return prev - 1;
       });
     }, 1000);
-  }, [status]);
+
+    if (words[0]) {
+      startWordTimer(words[0]);
+    }
+  }, [status, words, startWordTimer]);
 
   // ゲーム終了
   const endGame = useCallback(() => {
@@ -100,59 +211,27 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    clearWordTimer();
     setStatus("finished");
-  }, []);
+  }, [clearWordTimer]);
 
-  // タイムアップ処理
+  // タイムアップ処理（全体）
   useEffect(() => {
     if (timeLeft === 0 && status === "playing") {
       endGame();
     }
   }, [timeLeft, status, endGame]);
 
-  // 次のワードへ
-  const nextWord = useCallback(() => {
-    const nextIndex = currentWordIndex + 1;
-    if (nextIndex >= words.length) {
-      // ワードを再シャッフルして続行
-      const shuffled = shuffleWords(words);
-      setWords(shuffled);
-      setCurrentWordIndex(0);
-      const word = shuffled[0];
-      const patterns = hiraganaToRomajiPatterns(word.reading);
-      setTypingState({
-        patterns,
-        currentPatternIndex: 0,
-        currentInput: "",
-        typedRomaji: "",
-        displayRomaji: hiraganaToRomaji(word.reading),
-      });
-    } else {
-      setCurrentWordIndex(nextIndex);
-      const word = words[nextIndex];
-      const patterns = hiraganaToRomajiPatterns(word.reading);
-      setTypingState({
-        patterns,
-        currentPatternIndex: 0,
-        currentInput: "",
-        typedRomaji: "",
-        displayRomaji: hiraganaToRomaji(word.reading),
-      });
-    }
-  }, [currentWordIndex, words, shuffleWords]);
-
   // キー入力処理
   const handleKeyPress = useCallback(
     (key: string) => {
       if (status !== "playing" || !typingState || !currentWord) return;
 
-      // 特殊キーは無視
       if (key.length !== 1) return;
 
       const { patterns, currentPatternIndex, currentInput } = typingState;
 
       if (currentPatternIndex >= patterns.length) {
-        // 全パターン完了
         return;
       }
 
@@ -168,14 +247,38 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
 
         if (result.advancePattern) {
           const newPatternIndex = currentPatternIndex + 1;
-          const completedChar = patterns[currentPatternIndex][0];
           const newTypedRomaji = typingState.typedRomaji + (currentInput || "") + key;
 
           if (newPatternIndex >= patterns.length) {
             // ワード完了
             setCompletedWords((c) => c + 1);
-            setScore((s) => s + Math.ceil(100 * config.scoreMultiplier));
-            nextWord();
+
+            // スコア計算
+            const baseScore = 100 * config.scoreMultiplier;
+            const timeBonus = Math.floor(
+              (wordTimeLeft / wordTimeLimit) * 50 * config.timeBonusMultiplier
+            );
+            setScore((s) => s + Math.ceil(baseScore + timeBonus));
+
+            // コンボ処理（ミスなしでクリアした場合のみコンボ継続）
+            if (!hadMissInCurrentWord.current) {
+              const newCombo = combo + 1;
+              setCombo(newCombo);
+
+              // コンボボーナス判定
+              if (newCombo > 0 && newCombo % config.comboThreshold === 0) {
+                // ボーナスタイム付与
+                setTimeLeft((prev) => prev + config.comboBonusTime);
+                setTotalBonusTime((prev) => prev + config.comboBonusTime);
+                setShowBonusEffect(true);
+                setTimeout(() => setShowBonusEffect(false), 1500);
+              }
+            } else {
+              // ミスがあった場合はコンボリセット
+              setCombo(0);
+            }
+
+            nextWord(false);
           } else {
             setTypingState({
               ...typingState,
@@ -192,9 +295,10 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         }
       } else {
         setMissCount((c) => c + 1);
+        hadMissInCurrentWord.current = true; // ミスフラグを立てる
       }
     },
-    [status, typingState, currentWord, config.scoreMultiplier, nextWord]
+    [status, typingState, currentWord, config, wordTimeLeft, wordTimeLimit, combo, nextWord]
   );
 
   // キーボードイベントリスナー
@@ -222,8 +326,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      clearWordTimer();
     };
-  }, []);
+  }, [clearWordTimer]);
 
   // 結果計算
   const getResult = useCallback((): GameResult => {
@@ -255,6 +360,12 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     return { typed, remaining };
   }, [typingState]);
 
+  // ワードタイマーの進捗（0-1）
+  const getWordTimeProgress = useCallback(() => {
+    if (wordTimeLimit === 0) return 1;
+    return wordTimeLeft / wordTimeLimit;
+  }, [wordTimeLeft, wordTimeLimit]);
+
   return {
     status,
     currentWord,
@@ -263,10 +374,18 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     correctCount,
     missCount,
     completedWords,
+    skippedWords,
+    combo,
+    comboThreshold: config.comboThreshold,
+    showBonusEffect,
+    totalBonusTime,
+    wordTimeLeft,
+    wordTimeLimit,
     initGame,
     startGame,
     endGame,
     getResult,
     getTypingDisplay,
+    getWordTimeProgress,
   };
 }

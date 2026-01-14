@@ -4,7 +4,7 @@ import { useTypingGame } from "../hooks/useTypingGame";
 import { TypingDisplay } from "./TypingDisplay";
 import { GameStats } from "./GameStats";
 import { GameResult } from "./GameResult";
-import { Difficulty } from "@/types";
+import { Difficulty, DIFFICULTY_CONFIGS } from "@/types";
 
 interface GameScreenProps {
   difficulty: Difficulty;
@@ -13,6 +13,7 @@ interface GameScreenProps {
 }
 
 export function GameScreen({ difficulty, categoryId, onBack }: GameScreenProps) {
+  const config = DIFFICULTY_CONFIGS[difficulty];
   const {
     status,
     currentWord,
@@ -21,13 +22,19 @@ export function GameScreen({ difficulty, categoryId, onBack }: GameScreenProps) 
     correctCount,
     missCount,
     completedWords,
+    skippedWords,
+    combo,
+    comboThreshold,
+    showBonusEffect,
     initGame,
     startGame,
     getResult,
     getTypingDisplay,
+    getWordTimeProgress,
   } = useTypingGame(difficulty, categoryId);
 
   const { typed, remaining } = getTypingDisplay();
+  const wordTimeProgress = getWordTimeProgress();
 
   // ゲーム未初期化
   if (status === "idle") {
@@ -82,21 +89,38 @@ export function GameScreen({ difficulty, categoryId, onBack }: GameScreenProps) 
 
   // ゲーム中
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-2xl">
+    <div className="flex flex-col items-center gap-8 w-full max-w-2xl relative">
+      {/* ボーナスエフェクト */}
+      {showBonusEffect && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 animate-bounce">
+          <div className="bg-yellow-400 text-yellow-900 px-6 py-3 rounded-full font-bold text-lg shadow-lg">
+            +{config.comboBonusTime}秒 ボーナス!
+          </div>
+        </div>
+      )}
+
       <GameStats
         timeLeft={timeLeft}
         score={score}
         correctCount={correctCount}
         missCount={missCount}
         completedWords={completedWords}
+        skippedWords={skippedWords}
+        combo={combo}
+        comboThreshold={comboThreshold}
       />
 
       {currentWord && (
-        <TypingDisplay word={currentWord} typed={typed} remaining={remaining} />
+        <TypingDisplay
+          word={currentWord}
+          typed={typed}
+          remaining={remaining}
+          timeProgress={wordTimeProgress}
+        />
       )}
 
       <p className="text-sm text-zinc-400">
-        表示されている文字をタイピングしてください
+        {comboThreshold}語連続ノーミスクリアで+{config.comboBonusTime}秒ボーナス!
       </p>
     </div>
   );

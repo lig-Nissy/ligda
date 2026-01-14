@@ -48,25 +48,48 @@ export interface GameWord {
 
 // 難易度設定
 export interface DifficultyConfig {
-  timeLimit: number;
-  wordDisplayTime: number; // 1ワードあたりの表示時間（ミリ秒）
+  timeLimit: number; // ゲーム全体の制限時間（秒）
+  baseWordTime: number; // 1文字あたりの基準時間（ミリ秒）
+  minWordTime: number; // 1ワードの最小時間（ミリ秒）
+  maxWordTime: number; // 1ワードの最大時間（ミリ秒）
   scoreMultiplier: number;
+  timeBonusMultiplier: number; // 早くクリアした時のボーナス倍率
+  // コンボボーナス設定
+  comboThreshold: number; // ボーナス発生に必要な連続正解数
+  comboBonusTime: number; // ボーナスで追加される時間（秒）
 }
 
+// 難易度設定
+// ワードの制限時間 = 文字数 × baseWordTime（min/maxで制限）
 export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
   easy: {
     timeLimit: 60,
-    wordDisplayTime: 8000,
+    baseWordTime: 1200, // 1文字1.2秒
+    minWordTime: 4000, // 最低4秒
+    maxWordTime: 12000, // 最大12秒
     scoreMultiplier: 1,
+    timeBonusMultiplier: 0.5,
+    comboThreshold: 3, // 3語連続でボーナス
+    comboBonusTime: 5, // +5秒
   },
   normal: {
     timeLimit: 90,
-    wordDisplayTime: 5000,
+    baseWordTime: 800, // 1文字0.8秒
+    minWordTime: 3000, // 最低3秒
+    maxWordTime: 8000, // 最大8秒
     scoreMultiplier: 1.5,
+    timeBonusMultiplier: 1,
+    comboThreshold: 5, // 5語連続でボーナス
+    comboBonusTime: 5, // +5秒
   },
   hard: {
     timeLimit: 120,
-    wordDisplayTime: 3000,
+    baseWordTime: 500, // 1文字0.5秒
+    minWordTime: 2000, // 最低2秒
+    maxWordTime: 5000, // 最大5秒
     scoreMultiplier: 2,
+    timeBonusMultiplier: 1.5,
+    comboThreshold: 5, // 5語連続でボーナス
+    comboBonusTime: 3, // +3秒
   },
 };
