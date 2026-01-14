@@ -1,6 +1,6 @@
 "use client";
 
-import { Word, Category } from "@/types";
+import { Word, Category, DEFAULT_WEIGHTS } from "@/types";
 
 interface WordListProps {
   words: Word[];
@@ -37,48 +37,76 @@ export function WordList({ words, categories, onEdit, onDelete }: WordListProps)
             <th className="text-left py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
               カテゴリ
             </th>
+            <th className="text-center py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              重み
+            </th>
             <th className="text-right py-3 px-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
               操作
             </th>
           </tr>
         </thead>
         <tbody>
-          {words.map((word) => (
-            <tr
-              key={word.id}
-              className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-            >
-              <td className="py-3 px-4 text-zinc-800 dark:text-zinc-100">
-                {word.text}
-              </td>
-              <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
-                {word.reading}
-              </td>
-              <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
-                <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">
-                  {getCategoryName(word.categoryId)}
-                </span>
-              </td>
-              <td className="py-3 px-4 text-right">
-                <button
-                  onClick={() => onEdit(word)}
-                  className="text-blue-500 hover:text-blue-600 mr-3"
-                >
-                  編集
-                </button>
-                <button
-                  onClick={() => {
-                    if (confirm(`「${word.text}」を削除しますか？`)) {
-                      onDelete(word.id);
-                    }
-                  }}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  削除
-                </button>
-              </td>
-            </tr>
-          ))}
+          {words.map((word) => {
+            const weights = word.weights || DEFAULT_WEIGHTS;
+            return (
+              <tr
+                key={word.id}
+                className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              >
+                <td className="py-3 px-4 text-zinc-800 dark:text-zinc-100">
+                  {word.text}
+                </td>
+                <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
+                  {word.reading}
+                </td>
+                <td className="py-3 px-4 text-zinc-600 dark:text-zinc-300">
+                  <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">
+                    {getCategoryName(word.categoryId)}
+                  </span>
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex justify-center gap-1">
+                    <span
+                      className="px-2 py-0.5 text-xs rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                      title="かんたん"
+                    >
+                      易{weights.easy}
+                    </span>
+                    <span
+                      className="px-2 py-0.5 text-xs rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                      title="ふつう"
+                    >
+                      普{weights.normal}
+                    </span>
+                    <span
+                      className="px-2 py-0.5 text-xs rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                      title="むずかしい"
+                    >
+                      難{weights.hard}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <button
+                    onClick={() => onEdit(word)}
+                    className="text-blue-500 hover:text-blue-600 mr-3"
+                  >
+                    編集
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`「${word.text}」を削除しますか？`)) {
+                        onDelete(word.id);
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    削除
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

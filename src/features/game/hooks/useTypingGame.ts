@@ -7,7 +7,7 @@ import {
   hiraganaToRomaji,
   checkRomajiInput,
 } from "@/libs/romaji";
-import { getWordsByCategory } from "@/libs/storage";
+import { getWeightedWordsByDifficulty } from "@/libs/storage";
 
 export type GameStatus = "idle" | "ready" | "playing" | "finished";
 
@@ -150,7 +150,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
 
   // ゲーム初期化
   const initGame = useCallback(() => {
-    const allWords = getWordsByCategory(categoryId);
+    const allWords = getWeightedWordsByDifficulty(difficulty, categoryId);
     if (allWords.length === 0) {
       alert("ワードが登録されていません。管理画面からワードを追加してください。");
       return;
@@ -183,7 +183,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       typedRomaji: "",
       displayRomaji: hiraganaToRomaji(firstWord.reading),
     });
-  }, [categoryId, config.timeLimit, shuffleWords, clearWordTimer]);
+  }, [difficulty, categoryId, config.timeLimit, shuffleWords, clearWordTimer]);
 
   // ゲーム開始
   const startGame = useCallback(() => {

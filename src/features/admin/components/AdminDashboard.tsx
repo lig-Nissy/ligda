@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
-import { Word, Category } from "@/types";
+import { Word, Category, DifficultyWeights } from "@/types";
 import {
   getWords,
   addWord,
@@ -41,6 +41,7 @@ export function AdminDashboard() {
     text: string;
     reading: string;
     categoryId: string;
+    weights: DifficultyWeights;
   }) => {
     if (editingWord) {
       updateWord(editingWord.id, data);

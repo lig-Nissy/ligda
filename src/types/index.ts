@@ -1,15 +1,30 @@
 // 難易度
 export type Difficulty = "easy" | "normal" | "hard";
 
+// 難易度別の重み（出現頻度）
+export interface DifficultyWeights {
+  easy: number;
+  normal: number;
+  hard: number;
+}
+
 // ワード（タイピング対象）
 export interface Word {
   id: string;
   text: string; // 表示テキスト（日本語）
   reading: string; // ふりがな（ひらがな）
   categoryId: string;
+  weights: DifficultyWeights; // 難易度別の重み
   createdAt: string;
   updatedAt: string;
 }
+
+// デフォルトの重み
+export const DEFAULT_WEIGHTS: DifficultyWeights = {
+  easy: 1,
+  normal: 1,
+  hard: 1,
+};
 
 // カテゴリ
 export interface Category {

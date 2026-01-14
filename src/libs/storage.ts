@@ -1,4 +1,4 @@
-import { Word, Category } from "@/types";
+import { Word, Category, DEFAULT_WEIGHTS, Difficulty } from "@/types";
 
 const WORDS_KEY = "typing_game_words";
 const CATEGORIES_KEY = "typing_game_categories";
@@ -21,6 +21,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "寿司",
     reading: "すし",
     categoryId: "default",
+    weights: { easy: 2, normal: 1, hard: 0 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -29,6 +30,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "タイピング",
     reading: "たいぴんぐ",
     categoryId: "default",
+    weights: { easy: 1, normal: 2, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -37,6 +39,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "練習",
     reading: "れんしゅう",
     categoryId: "default",
+    weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -45,6 +48,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "キーボード",
     reading: "きーぼーど",
     categoryId: "default",
+    weights: { easy: 1, normal: 2, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -53,6 +57,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "プログラミング",
     reading: "ぷろぐらみんぐ",
     categoryId: "default",
+    weights: { easy: 0, normal: 1, hard: 2 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -61,6 +66,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "こんにちは",
     reading: "こんにちは",
     categoryId: "default",
+    weights: { easy: 2, normal: 1, hard: 0 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -69,6 +75,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "ありがとう",
     reading: "ありがとう",
     categoryId: "default",
+    weights: { easy: 2, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -77,6 +84,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "日本語",
     reading: "にほんご",
     categoryId: "default",
+    weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -85,6 +93,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "東京",
     reading: "とうきょう",
     categoryId: "default",
+    weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -93,6 +102,7 @@ const DEFAULT_WORDS: Word[] = [
     text: "富士山",
     reading: "ふじさん",
     categoryId: "default",
+    weights: { easy: 1, normal: 1, hard: 1 },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -100,6 +110,16 @@ const DEFAULT_WORDS: Word[] = [
 
 function isBrowser(): boolean {
   return typeof window !== "undefined";
+}
+
+// 既存データにweightsがない場合のマイグレーション
+function migrateWords(words: Word[]): Word[] {
+  return words.map((word) => {
+    if (!word.weights) {
+      return { ...word, weights: { ...DEFAULT_WEIGHTS } };
+    }
+    return word;
+  });
 }
 
 // Words
@@ -111,7 +131,10 @@ export function getWords(): Word[] {
     localStorage.setItem(WORDS_KEY, JSON.stringify(DEFAULT_WORDS));
     return DEFAULT_WORDS;
   }
-  return JSON.parse(stored);
+  const words = migrateWords(JSON.parse(stored));
+  // マイグレーション後のデータを保存
+  localStorage.setItem(WORDS_KEY, JSON.stringify(words));
+  return words;
 }
 
 export function saveWords(words: Word[]): void {
@@ -123,6 +146,7 @@ export function addWord(word: Omit<Word, "id" | "createdAt" | "updatedAt">): Wor
   const words = getWords();
   const newWord: Word = {
     ...word,
+    weights: word.weights || { ...DEFAULT_WEIGHTS },
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -161,6 +185,30 @@ export function getWordsByCategory(categoryId: string | null): Word[] {
   const words = getWords();
   if (!categoryId) return words;
   return words.filter((w) => w.categoryId === categoryId);
+}
+
+// 難易度別に重み付けされたワードリストを取得
+export function getWeightedWordsByDifficulty(
+  difficulty: Difficulty,
+  categoryId: string | null
+): Word[] {
+  const words = getWordsByCategory(categoryId);
+  const weightedWords: Word[] = [];
+
+  for (const word of words) {
+    const weight = word.weights[difficulty];
+    // 重みが0より大きい場合、その回数分ワードを追加
+    for (let i = 0; i < weight; i++) {
+      weightedWords.push(word);
+    }
+  }
+
+  // 重み0のワードしかない場合は全ワードを返す（フォールバック）
+  if (weightedWords.length === 0) {
+    return words;
+  }
+
+  return weightedWords;
 }
 
 // Categories

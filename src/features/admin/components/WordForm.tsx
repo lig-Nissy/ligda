@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Word, Category } from "@/types";
+import { Word, Category, DifficultyWeights, DEFAULT_WEIGHTS } from "@/types";
 
 interface WordFormProps {
   word?: Word | null;
   categories: Category[];
-  onSave: (data: { text: string; reading: string; categoryId: string }) => void;
+  onSave: (data: {
+    text: string;
+    reading: string;
+    categoryId: string;
+    weights: DifficultyWeights;
+  }) => void;
   onCancel: () => void;
 }
 
@@ -14,18 +19,28 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
   const [text, setText] = useState("");
   const [reading, setReading] = useState("");
   const [categoryId, setCategoryId] = useState("default");
+  const [weights, setWeights] = useState<DifficultyWeights>({ ...DEFAULT_WEIGHTS });
 
   useEffect(() => {
     if (word) {
       setText(word.text);
       setReading(word.reading);
       setCategoryId(word.categoryId);
+      setWeights(word.weights || { ...DEFAULT_WEIGHTS });
     } else {
       setText("");
       setReading("");
       setCategoryId("default");
+      setWeights({ ...DEFAULT_WEIGHTS });
     }
   }, [word]);
+
+  const handleWeightChange = (difficulty: keyof DifficultyWeights, value: number) => {
+    setWeights((prev) => ({
+      ...prev,
+      [difficulty]: Math.max(0, Math.min(10, value)),
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +48,7 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
       alert("テキストとふりがなは必須です");
       return;
     }
-    onSave({ text: text.trim(), reading: reading.trim(), categoryId });
+    onSave({ text: text.trim(), reading: reading.trim(), categoryId, weights });
   };
 
   return (
@@ -82,6 +97,57 @@ export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) 
             </option>
           ))}
         </select>
+      </div>
+
+      {/* 難易度別の重み設定 */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          難易度別の重み（出現頻度）
+        </label>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+          0〜10で設定。数値が大きいほど出現しやすくなります。0の場合はその難易度では出現しません。
+        </p>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+            <label className="block text-sm font-medium text-green-700 dark:text-green-400 mb-1">
+              かんたん
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              value={weights.easy}
+              onChange={(e) => handleWeightChange("easy", parseInt(e.target.value) || 0)}
+              className="w-full p-2 rounded border border-green-200 dark:border-green-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-center"
+            />
+          </div>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+            <label className="block text-sm font-medium text-yellow-700 dark:text-yellow-400 mb-1">
+              ふつう
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              value={weights.normal}
+              onChange={(e) => handleWeightChange("normal", parseInt(e.target.value) || 0)}
+              className="w-full p-2 rounded border border-yellow-200 dark:border-yellow-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-center"
+            />
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
+            <label className="block text-sm font-medium text-red-700 dark:text-red-400 mb-1">
+              むずかしい
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              value={weights.hard}
+              onChange={(e) => handleWeightChange("hard", parseInt(e.target.value) || 0)}
+              className="w-full p-2 rounded border border-red-200 dark:border-red-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-center"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-3 pt-4">
