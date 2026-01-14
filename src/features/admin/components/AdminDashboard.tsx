@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import { Word, Category } from "@/types";
 import {
   getWords,
@@ -92,12 +93,20 @@ export function AdminDashboard() {
           <h1 className="text-xl font-bold text-zinc-800 dark:text-zinc-100">
             管理画面
           </h1>
-          <a
-            href="/"
-            className="text-orange-500 hover:text-orange-600 text-sm"
-          >
-            ゲームへ戻る
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/"
+              className="text-orange-500 hover:text-orange-600 text-sm"
+            >
+              ゲームへ戻る
+            </a>
+            <button
+              onClick={() => signOut({ callbackUrl: "/admin/login" })}
+              className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-sm"
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
       </header>
 
