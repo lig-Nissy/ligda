@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, startTransition } from "react";
 import { Word, Difficulty, GameResult, DIFFICULTY_CONFIGS } from "@/types";
 import {
   hiraganaToRomajiPatterns,
@@ -155,7 +155,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   // ワードタイムアウト処理
   useEffect(() => {
     if (status === "playing" && wordTimeLeft <= 0 && wordTimeLimit > 0) {
-      nextWord(true);
+      startTransition(() => {
+        nextWord(true);
+      });
     }
   }, [wordTimeLeft, wordTimeLimit, status, nextWord]);
 
@@ -238,7 +240,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   // タイムアップ処理（全体）
   useEffect(() => {
     if (timeLeft === 0 && status === "playing") {
-      endGame();
+      startTransition(() => {
+        endGame();
+      });
     }
   }, [timeLeft, status, endGame]);
 

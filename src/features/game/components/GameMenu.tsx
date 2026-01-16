@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Difficulty, Category, DIFFICULTY_CONFIGS } from "@/types";
+import { useState, useEffect, startTransition } from "react";
+import Link from "next/link";
+import { Difficulty, Category } from "@/types";
 import { getCategories } from "@/libs/storage";
 
 interface GameMenuProps {
@@ -20,7 +21,9 @@ export function GameMenu({ onStart }: GameMenuProps) {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    setCategories(getCategories());
+    startTransition(() => {
+      setCategories(getCategories());
+    });
   }, []);
 
   return (
@@ -86,12 +89,12 @@ export function GameMenu({ onStart }: GameMenuProps) {
       </button>
 
       {/* 管理画面リンク */}
-      <a
+      <Link
         href="/admin"
         className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-sm"
       >
         管理画面へ
-      </a>
+      </Link>
     </div>
   );
 }
