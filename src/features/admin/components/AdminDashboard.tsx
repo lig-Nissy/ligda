@@ -14,13 +14,14 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/libs/storage";
+import { getRanking, clearRanking } from "@/libs/ranking";
 import { WordList } from "./WordList";
 import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
 import { CategoryForm } from "./CategoryForm";
 import { CsvUpload } from "./CsvUpload";
 
-type Tab = "words" | "categories" | "import";
+type Tab = "words" | "categories" | "import" | "ranking";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
@@ -32,12 +33,15 @@ export function AdminDashboard() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showWordForm, setShowWordForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [rankingCount, setRankingCount] = useState(0);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
     startTransition(() => {
       setWords(getWords());
       setCategories(getCategories());
+      setRankingCount(getRanking().length);
       setIsLoaded(true);
     });
   }, []);
@@ -98,6 +102,13 @@ export function AdminDashboard() {
     deleteCategory(id);
     setCategories(getCategories());
     setWords(getWords()); // ワードのカテゴリも更新される可能性
+  };
+
+  // ランキングリセット
+  const handleResetRanking = () => {
+    clearRanking();
+    setRankingCount(0);
+    setShowResetConfirm(false);
   };
 
   if (!isLoaded) {
@@ -169,6 +180,16 @@ export function AdminDashboard() {
             }`}
           >
             CSVインポート
+          </button>
+          <button
+            onClick={() => setTab("ranking")}
+            className={`px-4 py-2 font-medium -mb-px ${
+              tab === "ranking"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            ランキング管理
           </button>
         </div>
       </div>
@@ -273,6 +294,49 @@ export function AdminDashboard() {
                   setTab("words");
                 }}
               />
+            </div>
+          </div>
+        )}
+
+        {tab === "ranking" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                ランキング管理
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                現在のランキング登録数: <span className="font-bold">{rankingCount}件</span>
+              </p>
+
+              {showResetConfirm ? (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-red-600 dark:text-red-400 font-medium mb-4">
+                    本当にランキングをリセットしますか？この操作は取り消せません。
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleResetRanking}
+                      className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                    >
+                      リセットする
+                    </button>
+                    <button
+                      onClick={() => setShowResetConfirm(false)}
+                      className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={rankingCount === 0}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ランキングをリセット
+                </button>
+              )}
             </div>
           </div>
         )}

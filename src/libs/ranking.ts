@@ -76,3 +76,9 @@ export function saveNickname(nickname: string): void {
   if (!isBrowser()) return;
   localStorage.setItem(NICKNAME_KEY, nickname);
 }
+
+// ランキングをリセット（全削除）
+export function clearRanking(): void {
+  if (!isBrowser()) return;
+  localStorage.removeItem(RANKING_KEY);
+}
