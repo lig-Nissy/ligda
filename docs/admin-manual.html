@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タイピングゲーム 管理者運用マニュアル</title>
+  <style>
+    @media print {
+      body { font-size: 11pt; }
+      .page-break { page-break-before: always; }
+      h1, h2, h3 { page-break-after: avoid; }
+      table, pre { page-break-inside: avoid; }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
+      line-height: 1.8;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f97316;
+      border-bottom: 3px solid #f97316;
+      padding-bottom: 20px;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      color: #f97316;
+      border-left: 4px solid #f97316;
+      padding-left: 12px;
+      margin-top: 40px;
+    }
+
+    h3 {
+      color: #555;
+      margin-top: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+
+    code {
+      background-color: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "Monaco", "Consolas", monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "Monaco", "Consolas", monospace;
+      font-size: 0.9em;
+    }
+
+    .info-box {
+      background-color: #e0f2fe;
+      border-left: 4px solid #0ea5e9;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .warning-box {
+      background-color: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .danger-box {
+      background-color: #fee2e2;
+      border-left: 4px solid #ef4444;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .toc {
+      background-color: #fafafa;
+      padding: 20px 30px;
+      border-radius: 8px;
+      margin: 30px 0;
+    }
+
+    .toc h2 {
+      margin-top: 0;
+      border: none;
+      padding-left: 0;
+    }
+
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .toc li {
+      margin: 8px 0;
+    }
+
+    .toc a {
+      color: #f97316;
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      margin: 15px 0;
+    }
+
+    .step-number {
+      background-color: #f97316;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-right: 12px;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      text-align: center;
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .cover-info {
+      text-align: center;
+      margin: 40px 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<h1>タイピングゲーム<br>管理者運用マニュアル</h1>
+
+<div class="cover-info">
+  <p>Version 1.0</p>
+  <p>最終更新日: 2026年1月</p>
+</div>
+
+<div class="toc">
+  <h2>目次</h2>
+  <ul>
+    <li><a href="#overview">1. システム概要</a></li>
+    <li><a href="#login">2. 管理画面へのログイン</a></li>
+    <li><a href="#word-management">3. ワード管理</a></li>
+    <li><a href="#category-management">4. カテゴリ管理</a></li>
+    <li><a href="#csv-import">5. CSVインポート</a></li>
+    <li><a href="#ranking-management">6. ランキング管理</a></li>
+    <li><a href="#game-settings">7. ゲーム設定について</a></li>
+    <li><a href="#troubleshooting">8. トラブルシューティング</a></li>
+  </ul>
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="overview">1. システム概要</h2>
+
+<p>本システムは、Webブラウザ上で動作するタイピング練習ゲームです。管理者は以下の機能を使用してゲームコンテンツを管理できます。</p>
+
+<h3>主な機能</h3>
+<table>
+  <tr>
+    <th>機能</th>
+    <th>説明</th>
+  </tr>
+  <tr>
+    <td>ワード管理</td>
+    <td>タイピングの問題となるワードの追加・編集・削除</td>
+  </tr>
+  <tr>
+    <td>カテゴリ管理</td>
+    <td>ワードを分類するカテゴリの管理</td>
+  </tr>
+  <tr>
+    <td>CSVインポート</td>
+    <td>CSVファイルからワードを一括登録</td>
+  </tr>
+  <tr>
+    <td>ランキング管理</td>
+    <td>ランキングデータのリセット</td>
+  </tr>
+</table>
+
+<h3>URL一覧</h3>
+<table>
+  <tr>
+    <th>ページ</th>
+    <th>URL</th>
+  </tr>
+  <tr>
+    <td>ゲームトップ</td>
+    <td><code>/</code></td>
+  </tr>
+  <tr>
+    <td>ランキング</td>
+    <td><code>/ranking</code></td>
+  </tr>
+  <tr>
+    <td>管理画面ログイン</td>
+    <td><code>/admin/login</code></td>
+  </tr>
+  <tr>
+    <td>管理画面</td>
+    <td><code>/admin</code></td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<h2 id="login">2. 管理画面へのログイン</h2>
+
+<h3>ログイン手順</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    ブラウザで <code>/admin/login</code> にアクセスします。<br>
+    または、ゲームトップ画面下部の「管理画面へ」リンクをクリックします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    管理者用のメールアドレスとパスワードを入力します。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    「ログイン」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>ヒント:</strong> ログイン情報は環境変数で設定されています。不明な場合はシステム管理者にお問い合わせください。
+</div>
+
+<h3>ログアウト</h3>
+<p>管理画面右上の「ログアウト」をクリックすると、確認ダイアログが表示されます。「OK」を押すとログアウトし、ログイン画面に戻ります。</p>
+
+<div class="page-break"></div>
+
+<h2 id="word-management">3. ワード管理</h2>
+
+<p>「ワード管理」タブでは、タイピングゲームに出題されるワードを管理します。</p>
+
+<h3>ワード一覧の確認</h3>
+<p>登録されているワードの一覧が表示されます。各ワードには以下の情報が含まれます：</p>
+<ul>
+  <li><strong>テキスト:</strong> ゲーム中に表示される文字列</li>
+  <li><strong>ふりがな/入力テキスト:</strong> プレイヤーが入力する文字列</li>
+  <li><strong>入力タイプ:</strong> ひらがな（ローマ字入力）またはアルファベット</li>
+  <li><strong>カテゴリ:</strong> ワードが属するカテゴリ</li>
+  <li><strong>難易度別重み:</strong> 各難易度での出現頻度</li>
+</ul>
+
+<h3>ワードの追加</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    「ワードを追加」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    必要な情報を入力します：
+    <ul>
+      <li><strong>テキスト:</strong> 画面に表示される言葉（例: 寿司）</li>
+      <li><strong>入力タイプ:</strong> ひらがな or アルファベット</li>
+      <li><strong>ふりがな:</strong> 入力する文字（ひらがなで「すし」、またはアルファベット）</li>
+      <li><strong>カテゴリ:</strong> 分類するカテゴリ</li>
+      <li><strong>難易度別の重み:</strong> 0〜10の数値</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    「追加」ボタンをクリックして保存します。
+  </div>
+</div>
+
+<h3>難易度別の重みについて</h3>
+
+<table>
+  <tr>
+    <th>重み値</th>
+    <th>意味</th>
+  </tr>
+  <tr>
+    <td><code>0</code></td>
+    <td>その難易度では出現しない</td>
+  </tr>
+  <tr>
+    <td><code>1〜3</code></td>
+    <td>低頻度で出現</td>
+  </tr>
+  <tr>
+    <td><code>4〜6</code></td>
+    <td>標準的な頻度で出現</td>
+  </tr>
+  <tr>
+    <td><code>7〜10</code></td>
+    <td>高頻度で出現</td>
+  </tr>
+</table>
+
+<div class="info-box">
+  <strong>例:</strong> 簡単な言葉は「かんたん」の重みを高く、「むずかしい」の重みを0に設定すると、初心者向けの問題として機能します。
+</div>
+
+<h3>ワードの編集・削除</h3>
+<ul>
+  <li><strong>編集:</strong> ワード一覧の「編集」ボタンをクリック</li>
+  <li><strong>削除:</strong> ワード一覧の「削除」ボタンをクリック（確認なしで即削除）</li>
+  <li><strong>一括削除:</strong> チェックボックスで複数選択し、「選択したワードを削除」</li>
+</ul>
+
+<div class="warning-box">
+  <strong>注意:</strong> 削除したワードは復元できません。削除前に必ず確認してください。
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="category-management">4. カテゴリ管理</h2>
+
+<p>「カテゴリ管理」タブでは、ワードを分類するカテゴリを管理します。</p>
+
+<h3>カテゴリの追加</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    「カテゴリを追加」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    カテゴリ名と説明（任意）を入力します。
+    <ul>
+      <li><strong>カテゴリ名:</strong> 必須（例: プログラミング用語）</li>
+      <li><strong>説明:</strong> 任意（例: IT関連の専門用語）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    「追加」ボタンをクリックして保存します。
+  </div>
+</div>
+
+<h3>カテゴリの編集・削除</h3>
+<ul>
+  <li><strong>編集:</strong> カテゴリ一覧の「編集」ボタンをクリック</li>
+  <li><strong>削除:</strong> カテゴリ一覧の「削除」ボタンをクリック</li>
+</ul>
+
+<div class="danger-box">
+  <strong>重要:</strong> カテゴリを削除すると、そのカテゴリに属するワードのカテゴリが「デフォルト」に変更されます。
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="csv-import">5. CSVインポート</h2>
+
+<p>「CSVインポート」タブでは、CSVファイルからワードを一括登録できます。</p>
+
+<h3>CSVフォーマット</h3>
+
+<pre>テキスト,ふりがな,入力タイプ,カテゴリ,易,普,難
+寿司,すし,hiragana,一般,2,1,0
+container,container,alphabet,IT用語,0,1,2</pre>
+
+<table>
+  <tr>
+    <th>列</th>
+    <th>必須</th>
+    <th>説明</th>
+  </tr>
+  <tr>
+    <td>テキスト</td>
+    <td>必須</td>
+    <td>表示される言葉</td>
+  </tr>
+  <tr>
+    <td>ふりがな</td>
+    <td>必須</td>
+    <td>入力する文字（ひらがな or アルファベット）</td>
+  </tr>
+  <tr>
+    <td>入力タイプ</td>
+    <td>任意</td>
+    <td><code>hiragana</code> または <code>alphabet</code>（省略時: hiragana）</td>
+  </tr>
+  <tr>
+    <td>カテゴリ</td>
+    <td>任意</td>
+    <td>カテゴリ名またはID（省略時: default）</td>
+  </tr>
+  <tr>
+    <td>易</td>
+    <td>任意</td>
+    <td>「かんたん」の重み 0〜10（省略時: 1）</td>
+  </tr>
+  <tr>
+    <td>普</td>
+    <td>任意</td>
+    <td>「ふつう」の重み 0〜10（省略時: 1）</td>
+  </tr>
+  <tr>
+    <td>難</td>
+    <td>任意</td>
+    <td>「むずかしい」の重み 0〜10（省略時: 1）</td>
+  </tr>
+</table>
+
+<h3>インポート手順</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    CSVファイルをドラッグ＆ドロップ、またはクリックして選択します。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    プレビュー画面で内容を確認します。
+    <ul>
+      <li><span style="color: green;">✓</span> 有効な行</li>
+      <li><span style="color: red;">✗</span> エラーのある行（インポートされません）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    「〇件をインポート」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>ヒント:</strong> ヘッダー行は自動的にスキップされます。1行目に「text」「テキスト」「reading」「ふりがな」などが含まれていると、ヘッダー行として認識されます。
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="ranking-management">6. ランキング管理</h2>
+
+<p>「ランキング管理」タブでは、ランキングデータの管理ができます。</p>
+
+<h3>ランキングのリセット</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    「ランキングをリセット」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    確認画面が表示されます。本当にリセットする場合は「リセットする」をクリックします。
+  </div>
+</div>
+
+<div class="danger-box">
+  <strong>警告:</strong> ランキングのリセットは取り消すことができません。すべてのプレイヤーの記録が削除されます。
+</div>
+
+<h3>ランキングの仕様</h3>
+<ul>
+  <li>最大100件まで保存されます</li>
+  <li>難易度別に管理されています</li>
+  <li>データはブラウザのローカルストレージに保存されます</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2 id="game-settings">7. ゲーム設定について</h2>
+
+<p>ゲームの難易度設定は以下の通りです（システム固定値）。</p>
+
+<h3>難易度別設定</h3>
+
+<table>
+  <tr>
+    <th>設定項目</th>
+    <th>かんたん</th>
+    <th>ふつう</th>
+    <th>むずかしい</th>
+  </tr>
+  <tr>
+    <td>制限時間</td>
+    <td>60秒</td>
+    <td>90秒</td>
+    <td>120秒</td>
+  </tr>
+  <tr>
+    <td>スコア倍率</td>
+    <td>1.0倍</td>
+    <td>1.5倍</td>
+    <td>2.0倍</td>
+  </tr>
+  <tr>
+    <td>コンボボーナス条件</td>
+    <td>3語連続正解</td>
+    <td>5語連続正解</td>
+    <td>5語連続正解</td>
+  </tr>
+  <tr>
+    <td>コンボボーナス</td>
+    <td>+5秒</td>
+    <td>+5秒</td>
+    <td>+3秒</td>
+  </tr>
+  <tr>
+    <td>1文字あたり時間</td>
+    <td>1.2秒</td>
+    <td>0.8秒</td>
+    <td>0.5秒</td>
+  </tr>
+</table>
+
+<h3>入力タイプについて</h3>
+
+<table>
+  <tr>
+    <th>タイプ</th>
+    <th>説明</th>
+    <th>入力例</th>
+  </tr>
+  <tr>
+    <td>ひらがな</td>
+    <td>日本語をローマ字で入力</td>
+    <td>「すし」→ <code>sushi</code> または <code>susi</code></td>
+  </tr>
+  <tr>
+    <td>アルファベット</td>
+    <td>英単語をそのまま入力</td>
+    <td>「container」→ <code>container</code></td>
+  </tr>
+</table>
+
+<div class="page-break"></div>
+
+<h2 id="troubleshooting">8. トラブルシューティング</h2>
+
+<h3>よくある問題と解決方法</h3>
+
+<table>
+  <tr>
+    <th>問題</th>
+    <th>原因</th>
+    <th>解決方法</th>
+  </tr>
+  <tr>
+    <td>ログインできない</td>
+    <td>認証情報が間違っている</td>
+    <td>メールアドレスとパスワードを確認してください</td>
+  </tr>
+  <tr>
+    <td>CSVインポートでエラー</td>
+    <td>フォーマットが正しくない</td>
+    <td>CSVフォーマットを確認し、必須列が入力されているか確認してください</td>
+  </tr>
+  <tr>
+    <td>ワードが出題されない</td>
+    <td>重みが0に設定されている</td>
+    <td>該当難易度の重みを1以上に設定してください</td>
+  </tr>
+  <tr>
+    <td>データが消えた</td>
+    <td>ブラウザのデータがクリアされた</td>
+    <td>ローカルストレージがクリアされると復元できません。定期的にCSVエクスポートでバックアップを推奨します</td>
+  </tr>
+  <tr>
+    <td>ランキングが更新されない</td>
+    <td>ブラウザキャッシュの問題</td>
+    <td>ページを再読み込み（Ctrl+F5 / Cmd+Shift+R）してください</td>
+  </tr>
+</table>
+
+<h3>データのバックアップについて</h3>
+
+<div class="warning-box">
+  <strong>重要:</strong> ワード・カテゴリ・ランキングデータはすべてブラウザのローカルストレージに保存されています。ブラウザのデータをクリアしたり、別のブラウザ/デバイスを使用すると、データは共有されません。
+</div>
+
+<p>定期的なバックアップとして、以下を推奨します：</p>
+<ul>
+  <li>ワードデータをCSV形式で別途管理する</li>
+  <li>重要なデータ変更前にブラウザの開発者ツールからローカルストレージの内容をエクスポートする</li>
+</ul>
+
+<div class="footer">
+  <p>タイピングゲーム 管理者運用マニュアル</p>
+  <p>お問い合わせ: システム管理者までご連絡ください</p>
+</div>
+
+</body>
+</html>
