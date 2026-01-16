@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Word, Category, DifficultyWeights, InputType } from "@/types";
 import {
@@ -23,19 +24,13 @@ type Tab = "words" | "categories" | "import";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
-  const [words, setWords] = useState<Word[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [words, setWords] = useState<Word[]>(() => getWords());
+  const [categories, setCategories] = useState<Category[]>(() => getCategories());
 
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showWordForm, setShowWordForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-
-  // データ読み込み
-  useEffect(() => {
-    setWords(getWords());
-    setCategories(getCategories());
-  }, []);
 
   // ワード操作
   const handleSaveWord = (data: {
@@ -104,14 +99,18 @@ export function AdminDashboard() {
             管理画面
           </h1>
           <div className="flex items-center gap-4">
-            <a
+            <Link
               href="/"
               className="text-orange-500 hover:text-orange-600 text-sm"
             >
               ゲームへ戻る
-            </a>
+            </Link>
             <button
-              onClick={() => signOut({ callbackUrl: "/admin/login" })}
+              onClick={() => {
+                if (confirm("ログアウトしますか？")) {
+                  signOut({ callbackUrl: "/admin/login" });
+                }
+              }}
               className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-sm"
             >
               ログアウト
