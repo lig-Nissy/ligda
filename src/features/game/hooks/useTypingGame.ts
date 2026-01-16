@@ -8,6 +8,7 @@ import {
   checkRomajiInput,
 } from "@/libs/romaji";
 import { getWeightedWordsByDifficulty } from "@/libs/storage";
+import { playTypeSound, playMissSound, playCorrectSound, playGameEndSound } from "@/libs/sound";
 
 export type GameStatus = "idle" | "ready" | "playing" | "finished";
 
@@ -235,6 +236,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     }
     clearWordTimer();
     setStatus("finished");
+    playGameEndSound();
   }, [clearWordTimer]);
 
   // タイムアップ処理（全体）
@@ -267,6 +269,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       );
 
       if (result.matched) {
+        playTypeSound();
         setCorrectCount((c) => c + 1);
 
         if (result.advancePattern) {
@@ -275,6 +278,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
 
           if (newPatternIndex >= patterns.length) {
             // ワード完了
+            playCorrectSound();
             setCompletedWords((c) => c + 1);
 
             // スコア計算
@@ -318,6 +322,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
           });
         }
       } else {
+        playMissSound();
         setMissCount((c) => c + 1);
         hadMissInCurrentWord.current = true; // ミスフラグを立てる
       }
