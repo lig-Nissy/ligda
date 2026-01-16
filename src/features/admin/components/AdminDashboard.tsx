@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Word, Category, DifficultyWeights, InputType } from "@/types";
@@ -24,13 +24,23 @@ type Tab = "words" | "categories" | "import";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
-  const [words, setWords] = useState<Word[]>(() => getWords());
-  const [categories, setCategories] = useState<Category[]>(() => getCategories());
+  const [words, setWords] = useState<Word[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showWordForm, setShowWordForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+
+  // クライアントサイドでのみデータを読み込む
+  useEffect(() => {
+    startTransition(() => {
+      setWords(getWords());
+      setCategories(getCategories());
+      setIsLoaded(true);
+    });
+  }, []);
 
   // ワード操作
   const handleSaveWord = (data: {
@@ -90,6 +100,14 @@ export function AdminDashboard() {
     setWords(getWords()); // ワードのカテゴリも更新される可能性
   };
 
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+        <p className="text-zinc-500">読み込み中...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* ヘッダー */}
@@ -107,7 +125,7 @@ export function AdminDashboard() {
             </Link>
             <button
               onClick={() => {
-                if (confirm("ログアウトしますか？")) {
+                if (window.confirm("ログアウトしますか？")) {
                   signOut({ callbackUrl: "/admin/login" });
                 }
               }}
