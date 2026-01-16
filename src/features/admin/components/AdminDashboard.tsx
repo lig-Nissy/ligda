@@ -65,6 +65,13 @@ export function AdminDashboard() {
     setWords(getWords());
   };
 
+  const handleBulkDeleteWords = (ids: string[]) => {
+    for (const id of ids) {
+      deleteWord(id);
+    }
+    setWords(getWords());
+  };
+
   // カテゴリ操作
   const handleSaveCategory = (data: { name: string; description: string }) => {
     if (editingCategory) {
@@ -187,6 +194,7 @@ export function AdminDashboard() {
                     categories={categories}
                     onEdit={handleEditWord}
                     onDelete={handleDeleteWord}
+                    onBulkDelete={handleBulkDeleteWords}
                   />
                 </div>
               </>
