@@ -23,6 +23,7 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
   const [parsedWords, setParsedWords] = useState<ParsedWord[]>([]);
   const [isPreview, setIsPreview] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getCategoryName = (categoryId: string) => {
@@ -112,9 +113,11 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processFile = (file: File) => {
+    if (!file.name.endsWith(".csv")) {
+      alert("CSVファイルを選択してください");
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -124,6 +127,35 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
       setIsPreview(true);
     };
     reader.readAsText(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
   };
 
   const handleImport = async () => {
@@ -165,7 +197,16 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
       {/* アップロードエリア */}
       {!isPreview && (
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-600 rounded-lg p-8 text-center">
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              isDragging
+                ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20"
+                : "border-zinc-300 dark:border-zinc-600"
+            }`}
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -178,9 +219,11 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
               htmlFor="csv-upload"
               className="cursor-pointer block"
             >
-              <div className="text-4xl mb-4">📄</div>
+              <div className="text-4xl mb-4">{isDragging ? "📥" : "📄"}</div>
               <p className="text-zinc-600 dark:text-zinc-400 mb-2">
-                CSVファイルをクリックして選択
+                {isDragging
+                  ? "ここにドロップしてください"
+                  : "CSVファイルをクリックして選択"}
               </p>
               <p className="text-sm text-zinc-500 dark:text-zinc-500">
                 または、ドラッグ＆ドロップ
