@@ -88,6 +88,18 @@ export interface DifficultyConfig {
   comboBonusTime: number; // ボーナスで追加される時間（秒）
 }
 
+// ランキングエントリ
+export interface RankingEntry {
+  id: string;
+  nickname: string;
+  score: number;
+  difficulty: Difficulty;
+  accuracy: number;
+  wordsPerMinute: number;
+  totalWords: number;
+  createdAt: string;
+}
+
 // 難易度設定
 // ワードの制限時間 = 文字数 × baseWordTime（min/maxで制限）
 export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {

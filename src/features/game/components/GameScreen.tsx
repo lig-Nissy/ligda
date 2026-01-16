@@ -9,10 +9,11 @@ import { Difficulty, DIFFICULTY_CONFIGS } from "@/types";
 interface GameScreenProps {
   difficulty: Difficulty;
   categoryId: string | null;
+  nickname: string;
   onBack: () => void;
 }
 
-export function GameScreen({ difficulty, categoryId, onBack }: GameScreenProps) {
+export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScreenProps) {
   const config = DIFFICULTY_CONFIGS[difficulty];
   const {
     status,
@@ -83,7 +84,13 @@ export function GameScreen({ difficulty, categoryId, onBack }: GameScreenProps) 
   // ゲーム終了
   if (status === "finished") {
     return (
-      <GameResult result={getResult()} onRestart={initGame} onBack={onBack} />
+      <GameResult
+        result={getResult()}
+        difficulty={difficulty}
+        nickname={nickname}
+        onRestart={initGame}
+        onBack={onBack}
+      />
     );
   }
 

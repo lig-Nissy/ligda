@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Word, Category, DifficultyWeights, DEFAULT_WEIGHTS, InputType } from "@/types";
 
 interface WordFormProps {
@@ -17,27 +17,13 @@ interface WordFormProps {
 }
 
 export function WordForm({ word, categories, onSave, onCancel }: WordFormProps) {
-  const [text, setText] = useState("");
-  const [reading, setReading] = useState("");
-  const [inputType, setInputType] = useState<InputType>("hiragana");
-  const [categoryId, setCategoryId] = useState("default");
-  const [weights, setWeights] = useState<DifficultyWeights>({ ...DEFAULT_WEIGHTS });
-
-  useEffect(() => {
-    if (word) {
-      setText(word.text);
-      setReading(word.reading);
-      setInputType(word.inputType || "hiragana");
-      setCategoryId(word.categoryId);
-      setWeights(word.weights || { ...DEFAULT_WEIGHTS });
-    } else {
-      setText("");
-      setReading("");
-      setInputType("hiragana");
-      setCategoryId("default");
-      setWeights({ ...DEFAULT_WEIGHTS });
-    }
-  }, [word]);
+  const [text, setText] = useState(word?.text ?? "");
+  const [reading, setReading] = useState(word?.reading ?? "");
+  const [inputType, setInputType] = useState<InputType>(word?.inputType ?? "hiragana");
+  const [categoryId, setCategoryId] = useState(word?.categoryId ?? "default");
+  const [weights, setWeights] = useState<DifficultyWeights>(
+    word?.weights ? { ...word.weights } : { ...DEFAULT_WEIGHTS }
+  );
 
   const handleWeightChange = (difficulty: keyof DifficultyWeights, value: number) => {
     setWeights((prev) => ({

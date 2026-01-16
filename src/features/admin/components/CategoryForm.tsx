@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Category } from "@/types";
 
 interface CategoryFormProps {
@@ -10,18 +10,8 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    if (category) {
-      setName(category.name);
-      setDescription(category.description);
-    } else {
-      setName("");
-      setDescription("");
-    }
-  }, [category]);
+  const [name, setName] = useState(category?.name ?? "");
+  const [description, setDescription] = useState(category?.description ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
