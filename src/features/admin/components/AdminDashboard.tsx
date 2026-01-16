@@ -17,8 +17,9 @@ import { WordList } from "./WordList";
 import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
 import { CategoryForm } from "./CategoryForm";
+import { CsvUpload } from "./CsvUpload";
 
-type Tab = "words" | "categories";
+type Tab = "words" | "categories" | "import";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
@@ -135,6 +136,16 @@ export function AdminDashboard() {
           >
             カテゴリ管理
           </button>
+          <button
+            onClick={() => setTab("import")}
+            className={`px-4 py-2 font-medium -mb-px ${
+              tab === "import"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            CSVインポート
+          </button>
         </div>
       </div>
 
@@ -221,6 +232,23 @@ export function AdminDashboard() {
                 </div>
               </>
             )}
+          </div>
+        )}
+
+        {tab === "import" && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                CSVからワードをインポート
+              </h2>
+              <CsvUpload
+                categories={categories}
+                onImportComplete={() => {
+                  setWords(getWords());
+                  setTab("words");
+                }}
+              />
+            </div>
           </div>
         )}
       </div>

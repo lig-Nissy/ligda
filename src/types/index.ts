@@ -39,6 +39,16 @@ export interface Category {
   updatedAt: string;
 }
 
+// SVG画像
+export interface SvgImage {
+  id: string;
+  name: string;
+  description: string;
+  data: string; // SVGデータ（Base64またはSVG文字列）
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ゲーム設定
 export interface GameConfig {
   difficulty: Difficulty;
