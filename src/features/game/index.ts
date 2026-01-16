@@ -3,4 +3,5 @@ export { GameMenu } from "./components/GameMenu";
 export { GameResult } from "./components/GameResult";
 export { GameStats } from "./components/GameStats";
 export { TypingDisplay } from "./components/TypingDisplay";
+export { Ranking } from "./components/Ranking";
 export { useTypingGame } from "./hooks/useTypingGame";

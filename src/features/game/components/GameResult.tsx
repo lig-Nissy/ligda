@@ -1,14 +1,37 @@
 "use client";
 
-import { GameResult as GameResultType } from "@/types";
+import { useState, useEffect, startTransition } from "react";
+import { GameResult as GameResultType, Difficulty } from "@/types";
+import { addRankingEntry, getRank } from "@/libs/ranking";
+import { Ranking } from "./Ranking";
 
 interface GameResultProps {
   result: GameResultType;
+  difficulty: Difficulty;
+  nickname: string;
   onRestart: () => void;
   onBack: () => void;
 }
 
-export function GameResult({ result, onRestart, onBack }: GameResultProps) {
+export function GameResult({ result, difficulty, nickname, onRestart, onBack }: GameResultProps) {
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(null);
+  const [rank, setRank] = useState<number | null>(null);
+
+  // 初回レンダー時にランキングに保存
+  useEffect(() => {
+    const entry = addRankingEntry({
+      nickname,
+      score: result.score,
+      difficulty,
+      accuracy: result.accuracy,
+      wordsPerMinute: result.wordsPerMinute,
+      totalWords: result.totalWords,
+    });
+    startTransition(() => {
+      setSavedEntryId(entry.id);
+      setRank(getRank(result.score, difficulty));
+    });
+  }, [nickname, result, difficulty]);
   return (
     <div className="flex flex-col items-center gap-8 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg max-w-md w-full">
       <h2 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">
@@ -17,6 +40,16 @@ export function GameResult({ result, onRestart, onBack }: GameResultProps) {
 
       <div className="text-6xl font-bold text-orange-500">{result.score}</div>
       <div className="text-zinc-500 dark:text-zinc-400">スコア</div>
+
+      {/* 順位表示 */}
+      {rank !== null && (
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-600 dark:text-zinc-400">{nickname} さんは</span>
+          <span className={`text-2xl font-bold ${rank <= 3 ? "text-yellow-500" : "text-orange-500"}`}>
+            {rank}位
+          </span>
+        </div>
+      )}
 
       <div className="w-full grid grid-cols-2 gap-4">
         <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
@@ -62,6 +95,9 @@ export function GameResult({ result, onRestart, onBack }: GameResultProps) {
           </div>
         </div>
       </div>
+
+      {/* ランキング */}
+      <Ranking difficulty={difficulty} highlightEntryId={savedEntryId ?? undefined} />
 
       <div className="flex gap-4 w-full">
         <button
