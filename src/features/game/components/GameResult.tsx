@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, startTransition } from "react";
+import { useState, useEffect, startTransition, useRef } from "react";
 import { GameResult as GameResultType, Difficulty } from "@/types";
 import { addRankingEntry, getRank } from "@/libs/ranking";
 import { Ranking } from "./Ranking";
@@ -16,9 +16,13 @@ interface GameResultProps {
 export function GameResult({ result, difficulty, nickname, onRestart, onBack }: GameResultProps) {
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null);
   const [rank, setRank] = useState<number | null>(null);
+  const hasSaved = useRef(false);
 
-  // 初回レンダー時にランキングに保存
+  // 初回レンダー時にランキングに保存（1回のみ）
   useEffect(() => {
+    if (hasSaved.current) return;
+    hasSaved.current = true;
+
     const entry = addRankingEntry({
       nickname,
       score: result.score,
