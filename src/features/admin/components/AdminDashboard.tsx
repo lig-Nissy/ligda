@@ -99,7 +99,7 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* ヘッダー */}
       <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-zinc-800 dark:text-zinc-100">
             管理画面
           </h1>
@@ -121,7 +121,7 @@ export function AdminDashboard() {
       </header>
 
       {/* タブ */}
-      <div className="max-w-4xl mx-auto px-4 pt-6">
+      <div className="max-w-6xl mx-auto px-4 pt-6">
         <div className="flex gap-2 border-b border-zinc-200 dark:border-zinc-800">
           <button
             onClick={() => setTab("words")}
@@ -157,7 +157,7 @@ export function AdminDashboard() {
       </div>
 
       {/* コンテンツ */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {tab === "words" && (
           <div className="space-y-6">
             {showWordForm ? (
