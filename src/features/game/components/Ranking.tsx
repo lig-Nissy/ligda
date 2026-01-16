@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect, startTransition } from "react";
+import Link from "next/link";
 import { Difficulty, RankingEntry } from "@/types";
-import { getTopRanking } from "@/libs/ranking";
+import { getTopRanking, getRankingByDifficulty } from "@/libs/ranking";
 
 interface RankingProps {
   difficulty: Difficulty;
   highlightEntryId?: string;
+  limit?: number;
+  showMoreLink?: boolean;
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -15,15 +18,18 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard: "むずかしい",
 };
 
-export function Ranking({ difficulty, highlightEntryId }: RankingProps) {
+export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink = false }: RankingProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(difficulty);
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     startTransition(() => {
-      setRanking(getTopRanking(selectedDifficulty, 10));
+      const allRanking = getRankingByDifficulty(selectedDifficulty);
+      setRanking(allRanking.slice(0, limit));
+      setHasMore(allRanking.length > limit);
     });
-  }, [selectedDifficulty]);
+  }, [selectedDifficulty, limit]);
 
   return (
     <div className="w-full">
@@ -97,6 +103,16 @@ export function Ranking({ difficulty, highlightEntryId }: RankingProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* もっと見るリンク */}
+      {showMoreLink && hasMore && (
+        <Link
+          href={`/ranking?difficulty=${selectedDifficulty}`}
+          className="block mt-4 text-center text-orange-500 hover:text-orange-600 text-sm font-medium"
+        >
+          もっと見る →
+        </Link>
       )}
     </div>
   );

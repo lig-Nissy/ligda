@@ -101,7 +101,7 @@ export function GameResult({ result, difficulty, nickname, onRestart, onBack }: 
       </div>
 
       {/* ランキング */}
-      <Ranking difficulty={difficulty} highlightEntryId={savedEntryId ?? undefined} />
+      <Ranking difficulty={difficulty} highlightEntryId={savedEntryId ?? undefined} limit={5} showMoreLink />
 
       <div className="flex gap-4 w-full">
         <button

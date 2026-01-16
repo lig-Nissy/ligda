@@ -30,7 +30,7 @@ export default function Home() {
         <div className="relative w-full max-w-xl">
           <GameMenu onStart={handleStart} onDifficultyChange={setMenuDifficulty} />
           <div className="hidden lg:block absolute left-full top-1/2 -translate-y-1/2 ml-6 w-96 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg p-6 max-h-[90vh] overflow-y-auto">
-            <Ranking difficulty={menuDifficulty} />
+            <Ranking difficulty={menuDifficulty} limit={5} showMoreLink />
           </div>
         </div>
       )}
