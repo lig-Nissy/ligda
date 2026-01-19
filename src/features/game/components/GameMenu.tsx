@@ -24,10 +24,14 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
   const [nickname, setNickname] = useState("");
 
   useEffect(() => {
-    startTransition(() => {
-      setCategories(getCategories());
-      setNickname(getSavedNickname());
-    });
+    const loadData = async () => {
+      const categoriesData = await getCategories();
+      startTransition(() => {
+        setCategories(categoriesData);
+        setNickname(getSavedNickname());
+      });
+    };
+    loadData();
   }, []);
 
   const handleStart = () => {

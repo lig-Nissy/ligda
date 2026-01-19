@@ -21,3 +21,28 @@ model Ranking {
 
   @@index([difficulty, score(sort: Desc)])
 }
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  words       Word[]
+}
+
+model Word {
+  id          String   @id @default(cuid())
+  text        String
+  reading     String
+  inputType   String   // "hiragana" | "alphabet"
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  weightEasy  Int      @default(1)
+  weightNormal Int     @default(1)
+  weightHard  Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryId])
+}

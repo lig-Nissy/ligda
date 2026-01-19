@@ -163,7 +163,7 @@ export function CsvUpload({ categories, onImportComplete }: CsvUploadProps) {
     const validWords = parsedWords.filter((w) => w.isValid);
 
     for (const word of validWords) {
-      addWord({
+      await addWord({
         text: word.text,
         reading: word.reading,
         inputType: word.inputType,

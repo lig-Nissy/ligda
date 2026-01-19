@@ -9,6 +9,7 @@ import {
   addWord,
   updateWord,
   deleteWord,
+  bulkDeleteWords,
   getCategories,
   addCategory,
   updateCategory,
@@ -39,10 +40,14 @@ export function AdminDashboard() {
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
     const loadData = async () => {
-      const count = await getRankingCount();
+      const [wordsData, categoriesData, count] = await Promise.all([
+        getWords(),
+        getCategories(),
+        getRankingCount(),
+      ]);
       startTransition(() => {
-        setWords(getWords());
-        setCategories(getCategories());
+        setWords(wordsData);
+        setCategories(categoriesData);
         setRankingCount(count);
         setIsLoaded(true);
       });
@@ -51,7 +56,7 @@ export function AdminDashboard() {
   }, []);
 
   // ワード操作
-  const handleSaveWord = (data: {
+  const handleSaveWord = async (data: {
     text: string;
     reading: string;
     inputType: InputType;
@@ -59,11 +64,12 @@ export function AdminDashboard() {
     weights: DifficultyWeights;
   }) => {
     if (editingWord) {
-      updateWord(editingWord.id, data);
+      await updateWord(editingWord.id, data);
     } else {
-      addWord(data);
+      await addWord(data);
     }
-    setWords(getWords());
+    const wordsData = await getWords();
+    setWords(wordsData);
     setShowWordForm(false);
     setEditingWord(null);
   };
@@ -73,26 +79,27 @@ export function AdminDashboard() {
     setShowWordForm(true);
   };
 
-  const handleDeleteWord = (id: string) => {
-    deleteWord(id);
-    setWords(getWords());
+  const handleDeleteWord = async (id: string) => {
+    await deleteWord(id);
+    const wordsData = await getWords();
+    setWords(wordsData);
   };
 
-  const handleBulkDeleteWords = (ids: string[]) => {
-    for (const id of ids) {
-      deleteWord(id);
-    }
-    setWords(getWords());
+  const handleBulkDeleteWords = async (ids: string[]) => {
+    await bulkDeleteWords(ids);
+    const wordsData = await getWords();
+    setWords(wordsData);
   };
 
   // カテゴリ操作
-  const handleSaveCategory = (data: { name: string; description: string }) => {
+  const handleSaveCategory = async (data: { name: string; description: string }) => {
     if (editingCategory) {
-      updateCategory(editingCategory.id, data);
+      await updateCategory(editingCategory.id, data);
     } else {
-      addCategory(data);
+      await addCategory(data);
     }
-    setCategories(getCategories());
+    const categoriesData = await getCategories();
+    setCategories(categoriesData);
     setShowCategoryForm(false);
     setEditingCategory(null);
   };
@@ -102,10 +109,14 @@ export function AdminDashboard() {
     setShowCategoryForm(true);
   };
 
-  const handleDeleteCategory = (id: string) => {
-    deleteCategory(id);
-    setCategories(getCategories());
-    setWords(getWords()); // ワードのカテゴリも更新される可能性
+  const handleDeleteCategory = async (id: string) => {
+    await deleteCategory(id);
+    const [categoriesData, wordsData] = await Promise.all([
+      getCategories(),
+      getWords(),
+    ]);
+    setCategories(categoriesData);
+    setWords(wordsData);
   };
 
   // ランキングリセット
@@ -293,8 +304,9 @@ export function AdminDashboard() {
               </h2>
               <CsvUpload
                 categories={categories}
-                onImportComplete={() => {
-                  setWords(getWords());
+                onImportComplete={async () => {
+                  const wordsData = await getWords();
+                  setWords(wordsData);
                   setTab("words");
                 }}
               />

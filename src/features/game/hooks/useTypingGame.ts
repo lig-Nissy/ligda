@@ -163,8 +163,8 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   }, [wordTimeLeft, wordTimeLimit, status, nextWord]);
 
   // ゲーム初期化
-  const initGame = useCallback(() => {
-    const allWords = getWeightedWordsByDifficulty(difficulty, categoryId);
+  const initGame = useCallback(async () => {
+    const allWords = await getWeightedWordsByDifficulty(difficulty, categoryId);
     if (allWords.length === 0) {
       alert("ワードが登録されていません。管理画面からワードを追加してください。");
       return;
