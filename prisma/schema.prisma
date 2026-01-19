@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Ranking {
+  id             String   @id @default(cuid())
+  nickname       String
+  score          Int
+  difficulty     String   // "easy" | "normal" | "hard"
+  accuracy       Float
+  wordsPerMinute Float
+  totalWords     Int
+  createdAt      DateTime @default(now())
+
+  @@index([difficulty, score(sort: Desc)])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  words       Word[]
+}
+
+model Word {
+  id          String   @id @default(cuid())
+  text        String
+  reading     String
+  inputType   String   // "hiragana" | "alphabet"
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  weightEasy  Int      @default(1)
+  weightNormal Int     @default(1)
+  weightHard  Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([categoryId])
+}

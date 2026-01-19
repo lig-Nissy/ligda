@@ -20,9 +20,13 @@ function RankingContent() {
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
-    startTransition(() => {
-      setRanking(getRankingByDifficulty(selectedDifficulty));
-    });
+    const fetchRanking = async () => {
+      const data = await getRankingByDifficulty(selectedDifficulty);
+      startTransition(() => {
+        setRanking(data);
+      });
+    };
+    fetchRanking();
   }, [selectedDifficulty]);
 
   return (

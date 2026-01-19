@@ -42,7 +42,7 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
     return (
       <div className="flex flex-col items-center gap-8">
         <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-          タイピングゲーム
+          リグ打
         </h2>
         <button
           onClick={initGame}

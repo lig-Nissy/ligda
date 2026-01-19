@@ -23,18 +23,22 @@ export function GameResult({ result, difficulty, nickname, onRestart, onBack }: 
     if (hasSaved.current) return;
     hasSaved.current = true;
 
-    const entry = addRankingEntry({
-      nickname,
-      score: result.score,
-      difficulty,
-      accuracy: result.accuracy,
-      wordsPerMinute: result.wordsPerMinute,
-      totalWords: result.totalWords,
-    });
-    startTransition(() => {
-      setSavedEntryId(entry.id);
-      setRank(getRank(result.score, difficulty));
-    });
+    const saveAndFetchRank = async () => {
+      const entry = await addRankingEntry({
+        nickname,
+        score: result.score,
+        difficulty,
+        accuracy: result.accuracy,
+        wordsPerMinute: result.wordsPerMinute,
+        totalWords: result.totalWords,
+      });
+      const currentRank = await getRank(result.score, difficulty);
+      startTransition(() => {
+        setSavedEntryId(entry.id);
+        setRank(currentRank);
+      });
+    };
+    saveAndFetchRank();
   }, [nickname, result, difficulty]);
   return (
     <div className="flex flex-col items-center gap-8 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg max-w-md w-full">
