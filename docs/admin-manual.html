@@ -181,8 +181,9 @@
 <h1>タイピングゲーム<br>管理者運用マニュアル</h1>
 
 <div class="cover-info">
-  <p>Version 1.0</p>
+  <p>Version 2.0</p>
   <p>最終更新日: 2026年1月</p>
+  <p>データベース: Supabase (PostgreSQL)</p>
 </div>
 
 <div class="toc">
@@ -195,7 +196,8 @@
     <li><a href="#csv-import">5. CSVインポート</a></li>
     <li><a href="#ranking-management">6. ランキング管理</a></li>
     <li><a href="#game-settings">7. ゲーム設定について</a></li>
-    <li><a href="#troubleshooting">8. トラブルシューティング</a></li>
+    <li><a href="#database">8. データベース（Supabase）</a></li>
+    <li><a href="#troubleshooting">9. トラブルシューティング</a></li>
   </ul>
 </div>
 
@@ -228,6 +230,42 @@
     <td>ランキングデータのリセット</td>
   </tr>
 </table>
+
+<h3>技術構成</h3>
+<table>
+  <tr>
+    <th>項目</th>
+    <th>技術</th>
+  </tr>
+  <tr>
+    <td>フロントエンド</td>
+    <td>Next.js 16 / React / Tailwind CSS</td>
+  </tr>
+  <tr>
+    <td>バックエンド</td>
+    <td>Next.js API Routes</td>
+  </tr>
+  <tr>
+    <td>データベース</td>
+    <td>PostgreSQL（Supabase）</td>
+  </tr>
+  <tr>
+    <td>ORM</td>
+    <td>Prisma 7</td>
+  </tr>
+  <tr>
+    <td>認証</td>
+    <td>NextAuth</td>
+  </tr>
+  <tr>
+    <td>ホスティング</td>
+    <td>Vercel</td>
+  </tr>
+</table>
+
+<div class="info-box">
+  <strong>データの保存先:</strong> すべてのデータ（ワード、カテゴリ、ランキング）はSupabaseのPostgreSQLデータベースに保存されます。複数デバイス・複数ブラウザで同じデータを共有できます。
+</div>
 
 <h3>URL一覧</h3>
 <table>
@@ -531,9 +569,10 @@ container,container,alphabet,IT用語,0,1,2</pre>
 
 <h3>ランキングの仕様</h3>
 <ul>
-  <li>最大100件まで保存されます</li>
-  <li>難易度別に管理されています</li>
-  <li>データはブラウザのローカルストレージに保存されます</li>
+  <li>難易度ごとに最大100件まで保存されます</li>
+  <li>難易度別（かんたん/ふつう/むずかしい）に管理されています</li>
+  <li>データはSupabaseのPostgreSQLデータベースに保存されます</li>
+  <li>100件を超えると古いスコアから自動的に削除されます</li>
 </ul>
 
 <div class="page-break"></div>
@@ -605,7 +644,107 @@ container,container,alphabet,IT用語,0,1,2</pre>
 
 <div class="page-break"></div>
 
-<h2 id="troubleshooting">8. トラブルシューティング</h2>
+<h2 id="database">8. データベース（Supabase）</h2>
+
+<p>本システムのデータはSupabaseのPostgreSQLデータベースに保存されています。緊急時やバッチ処理が必要な場合は、Supabaseダッシュボードから直接操作できます。</p>
+
+<h3>Supabaseダッシュボードへのアクセス</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    <a href="https://supabase.com/" target="_blank">https://supabase.com/</a> にアクセスし、ログインします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    プロジェクト一覧からプロジェクトを選択します。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    左メニューの「Table Editor」をクリックすると、テーブル一覧が表示されます。
+  </div>
+</div>
+
+<h3>テーブル構成</h3>
+
+<table>
+  <tr>
+    <th>テーブル名</th>
+    <th>用途</th>
+    <th>主なカラム</th>
+  </tr>
+  <tr>
+    <td><code>Ranking</code></td>
+    <td>ランキングデータ</td>
+    <td>nickname, score, difficulty, accuracy, wordsPerMinute</td>
+  </tr>
+  <tr>
+    <td><code>Category</code></td>
+    <td>カテゴリマスタ</td>
+    <td>name, description</td>
+  </tr>
+  <tr>
+    <td><code>Word</code></td>
+    <td>ワードマスタ</td>
+    <td>text, reading, inputType, categoryId, weightEasy/Normal/Hard</td>
+  </tr>
+</table>
+
+<h3>SQLでの直接操作</h3>
+
+<p>Supabaseの「SQL Editor」タブから直接SQLを実行できます。</p>
+
+<div class="warning-box">
+  <strong>注意:</strong> SQLの直接実行は慎重に行ってください。誤った操作はデータの損失につながる可能性があります。
+</div>
+
+<h4>よく使うSQL例</h4>
+
+<p><strong>特定カテゴリのワードを全削除:</strong></p>
+<pre>DELETE FROM "Word" WHERE "categoryId" = 'カテゴリID';</pre>
+
+<p><strong>古いランキングデータを削除:</strong></p>
+<pre>DELETE FROM "Ranking" WHERE "createdAt" &lt; '2024-01-01';</pre>
+
+<p><strong>ワードの重みを一括更新:</strong></p>
+<pre>UPDATE "Word" SET "weightHard" = 2 WHERE "categoryId" = 'it';</pre>
+
+<p><strong>データ件数の確認:</strong></p>
+<pre>SELECT COUNT(*) FROM "Word";
+SELECT COUNT(*) FROM "Ranking";
+SELECT COUNT(*) FROM "Category";</pre>
+
+<h3>バックアップ</h3>
+
+<p>Supabaseでは自動バックアップが提供されています。</p>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    Supabaseダッシュボードで「Settings」→「Database」を開きます。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    「Backups」セクションでバックアップの状態を確認できます。
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>ヒント:</strong> 重要なデータ変更前には、Table EditorからデータをCSVでエクスポートしておくことをお勧めします。
+</div>
+
+<div class="page-break"></div>
+
+<h2 id="troubleshooting">9. トラブルシューティング</h2>
 
 <h3>よくある問題と解決方法</h3>
 
@@ -631,9 +770,14 @@ container,container,alphabet,IT用語,0,1,2</pre>
     <td>該当難易度の重みを1以上に設定してください</td>
   </tr>
   <tr>
-    <td>データが消えた</td>
-    <td>ブラウザのデータがクリアされた</td>
-    <td>ローカルストレージがクリアされると復元できません。定期的にCSVエクスポートでバックアップを推奨します</td>
+    <td>データが表示されない</td>
+    <td>データベース接続エラー</td>
+    <td>Supabaseダッシュボードでプロジェクトの状態を確認。一時停止していないか確認してください</td>
+  </tr>
+  <tr>
+    <td>API接続エラー</td>
+    <td>環境変数の設定ミス</td>
+    <td>Vercelの環境変数（DATABASE_URL）が正しく設定されているか確認してください</td>
   </tr>
   <tr>
     <td>ランキングが更新されない</td>
@@ -644,14 +788,28 @@ container,container,alphabet,IT用語,0,1,2</pre>
 
 <h3>データのバックアップについて</h3>
 
-<div class="warning-box">
-  <strong>重要:</strong> ワード・カテゴリ・ランキングデータはすべてブラウザのローカルストレージに保存されています。ブラウザのデータをクリアしたり、別のブラウザ/デバイスを使用すると、データは共有されません。
+<div class="info-box">
+  <strong>安心ポイント:</strong> すべてのデータはSupabaseのクラウドデータベースに保存されています。ブラウザのキャッシュをクリアしてもデータは失われません。
 </div>
 
-<p>定期的なバックアップとして、以下を推奨します：</p>
+<p>バックアップ方法：</p>
 <ul>
-  <li>ワードデータをCSV形式で別途管理する</li>
-  <li>重要なデータ変更前にブラウザの開発者ツールからローカルストレージの内容をエクスポートする</li>
+  <li><strong>自動バックアップ:</strong> Supabaseが自動的にバックアップを作成しています</li>
+  <li><strong>手動バックアップ:</strong> SupabaseのTable Editorから各テーブルのデータをCSVでエクスポートできます</li>
+  <li><strong>ワードデータ:</strong> 重要なワードデータはCSVファイルで別途管理することをお勧めします</li>
+</ul>
+
+<h3>Supabaseプロジェクトの一時停止について</h3>
+
+<div class="warning-box">
+  <strong>注意:</strong> Supabaseの無料プランでは、7日間アクセスがないとプロジェクトが自動的に一時停止されます。一時停止中はデータベースにアクセスできません。
+</div>
+
+<p>一時停止を解除するには：</p>
+<ul>
+  <li>Supabaseダッシュボードにログイン</li>
+  <li>プロジェクトを選択</li>
+  <li>「Resume Project」ボタンをクリック</li>
 </ul>
 
 <div class="footer">
