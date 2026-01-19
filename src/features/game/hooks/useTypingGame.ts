@@ -8,7 +8,7 @@ import {
   checkRomajiInput,
 } from "@/libs/romaji";
 import { getWeightedWordsByDifficulty } from "@/libs/storage";
-import { playTypeSound, playMissSound, playCorrectSound, playGameEndSound } from "@/libs/sound";
+import { playTypeSound, playMissSound, playCorrectSound, playGameEndSound, playBonusSound } from "@/libs/sound";
 
 export type GameStatus = "idle" | "ready" | "playing" | "finished";
 
@@ -304,6 +304,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
                 setTotalBonusTime((prev) => prev + bonusTime);
                 setLastBonusTime(bonusTime);
                 setShowBonusEffect(true);
+                playBonusSound();
                 setTimeout(() => setShowBonusEffect(false), 1500);
               }
             } else {
