@@ -25,7 +25,7 @@ export function playTypeSound(): void {
   oscillator.type = "sine";
   oscillator.frequency.setValueAtTime(800, ctx.currentTime);
 
-  gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+  gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
   gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
 
   oscillator.start(ctx.currentTime);
