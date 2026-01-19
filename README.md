@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# リグ打
 
-## Getting Started
+日本語タイピング練習アプリケーション
 
-First, run the development server:
+## 機能
+
+- タイピングゲーム（難易度選択：かんたん/ふつう/むずかしい）
+- カテゴリ別ワード（一般、IT用語など）
+- ランキング機能
+- 管理画面（ワード/カテゴリの管理）
+
+## 技術スタック
+
+- Next.js 16
+- Prisma 7 (PostgreSQL)
+- Supabase
+- NextAuth (管理者認証)
+- Tailwind CSS
+
+## セットアップ
+
+### 1. 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+
+`.env` ファイルを作成し、以下を設定：
+
+```env
+DATABASE_URL="postgresql://[USER]:[PASSWORD]@[HOST]:5432/postgres"
+DIRECT_URL="postgresql://[USER]:[PASSWORD]@[HOST]:5432/postgres"
+```
+
+### 3. データベースのセットアップ
+
+```bash
+# スキーマをDBに反映
+npx prisma db push
+
+# シードデータの投入
+npm run db:seed
+```
+
+### 4. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:4000 でアクセス可能
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercelデプロイ
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 環境変数
 
-## Learn More
+Vercelの設定で以下の環境変数を追加：
 
-To learn more about Next.js, take a look at the following resources:
+- `DATABASE_URL`: Supabaseの接続文字列（Session Pooler使用推奨）
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### ビルド
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`npm run build` 実行時に自動で `prisma generate` が実行されます。
 
-## Deploy on Vercel
+## スクリプト
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| コマンド | 説明 |
+|---------|------|
+| `npm run dev` | 開発サーバー起動 (port 4000) |
+| `npm run build` | 本番ビルド |
+| `npm run start` | 本番サーバー起動 |
+| `npm run db:seed` | シードデータ投入 |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## データベース構造
+
+### Ranking
+ランキングデータを格納
+
+| カラム | 型 | 説明 |
+|-------|-----|------|
+| id | String | 主キー |
+| nickname | String | ニックネーム |
+| score | Int | スコア |
+| difficulty | String | 難易度 (easy/normal/hard) |
+| accuracy | Float | 正確率 |
+| wordsPerMinute | Float | WPM |
+| totalWords | Int | 総ワード数 |
+
+### Category
+ワードのカテゴリ
+
+| カラム | 型 | 説明 |
+|-------|-----|------|
+| id | String | 主キー |
+| name | String | カテゴリ名 |
+| description | String | 説明 |
+
+### Word
+タイピング用ワード
+
+| カラム | 型 | 説明 |
+|-------|-----|------|
+| id | String | 主キー |
+| text | String | 表示テキスト |
+| reading | String | 読み（入力用） |
+| inputType | String | 入力タイプ (hiragana/alphabet) |
+| categoryId | String | カテゴリID |
+| weightEasy | Int | かんたんの重み |
+| weightNormal | Int | ふつうの重み |
+| weightHard | Int | むずかしいの重み |
+
+## API エンドポイント
+
+| エンドポイント | メソッド | 説明 |
+|---------------|---------|------|
+| `/api/ranking` | GET/POST | ランキング取得/追加 |
+| `/api/ranking/count` | GET | ランキング件数取得 |
+| `/api/ranking/clear` | DELETE | ランキング全削除 |
+| `/api/words` | GET/POST/PUT | ワード取得/追加/一括追加 |
+| `/api/words/[id]` | PUT/DELETE | ワード更新/削除 |
+| `/api/words/bulk-delete` | POST | ワード一括削除 |
+| `/api/categories` | GET/POST | カテゴリ取得/追加 |
+| `/api/categories/[id]` | PUT/DELETE | カテゴリ更新/削除 |
