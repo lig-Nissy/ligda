@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GameMenu, GameScreen, Ranking } from "@/features/game";
 import { Difficulty } from "@/types";
+import { BgmController } from "@/components/BgmController";
 
 type Screen = "menu" | "game";
 
@@ -26,6 +27,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-4">
+      <BgmController />
       {screen === "menu" && (
         <div className="relative w-full max-w-xl">
           <GameMenu onStart={handleStart} onDifficultyChange={setMenuDifficulty} />
