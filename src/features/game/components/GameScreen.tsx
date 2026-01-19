@@ -4,7 +4,7 @@ import { useTypingGame } from "../hooks/useTypingGame";
 import { TypingDisplay } from "./TypingDisplay";
 import { GameStats } from "./GameStats";
 import { GameResult } from "./GameResult";
-import { Difficulty, DIFFICULTY_CONFIGS } from "@/types";
+import { Difficulty } from "@/types";
 
 interface GameScreenProps {
   difficulty: Difficulty;
@@ -14,7 +14,6 @@ interface GameScreenProps {
 }
 
 export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScreenProps) {
-  const config = DIFFICULTY_CONFIGS[difficulty];
   const {
     status,
     currentWord,
@@ -27,6 +26,7 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
     combo,
     comboThreshold,
     showBonusEffect,
+    lastBonusTime,
     initGame,
     startGame,
     getResult,
@@ -101,7 +101,7 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
       {showBonusEffect && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 animate-bounce">
           <div className="bg-yellow-400 text-yellow-900 px-6 py-3 rounded-full font-bold text-lg shadow-lg">
-            +{config.comboBonusTime}秒 ボーナス!
+            +{lastBonusTime}秒 ボーナス!
           </div>
         </div>
       )}
@@ -127,7 +127,7 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
       )}
 
       <p className="text-sm text-zinc-400">
-        {comboThreshold}語連続ノーミスクリアで+{config.comboBonusTime}秒ボーナス!
+        5問連続で+1秒、10問で+2秒、15問以降で+3秒ボーナス!
       </p>
     </div>
   );

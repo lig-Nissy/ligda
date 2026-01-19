@@ -53,6 +53,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   const [combo, setCombo] = useState(0); // 連続正解数（ミスなしでワードクリア）
   const [showBonusEffect, setShowBonusEffect] = useState(false);
   const [totalBonusTime, setTotalBonusTime] = useState(0);
+  const [lastBonusTime, setLastBonusTime] = useState(0); // 最後に付与したボーナス時間
   const hadMissInCurrentWord = useRef(false);
 
   // ワードタイマー関連
@@ -182,6 +183,7 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     setSkippedWords(0);
     setCombo(0);
     setTotalBonusTime(0);
+    setLastBonusTime(0);
     setShowBonusEffect(false);
     hadMissInCurrentWord.current = false;
     setWordTimeLeft(0);
@@ -293,11 +295,14 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
               const newCombo = combo + 1;
               setCombo(newCombo);
 
-              // コンボボーナス判定
-              if (newCombo > 0 && newCombo % config.comboThreshold === 0) {
-                // ボーナスタイム付与
-                setTimeLeft((prev) => prev + config.comboBonusTime);
-                setTotalBonusTime((prev) => prev + config.comboBonusTime);
+              // コンボボーナス判定（5問ごとにボーナス、段階的に時間増加）
+              // 5問: +1秒、10問: +2秒、15問以降: +3秒
+              if (newCombo > 0 && newCombo % 5 === 0) {
+                const comboLevel = Math.floor(newCombo / 5); // 1, 2, 3, ...
+                const bonusTime = Math.min(comboLevel, 3); // 最大3秒
+                setTimeLeft((prev) => prev + bonusTime);
+                setTotalBonusTime((prev) => prev + bonusTime);
+                setLastBonusTime(bonusTime);
                 setShowBonusEffect(true);
                 setTimeout(() => setShowBonusEffect(false), 1500);
               }
@@ -405,8 +410,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     completedWords,
     skippedWords,
     combo,
-    comboThreshold: config.comboThreshold,
+    comboThreshold: 5, // 5問ごとにボーナス（固定）
     showBonusEffect,
+    lastBonusTime,
     totalBonusTime,
     wordTimeLeft,
     wordTimeLimit,
