@@ -24,11 +24,14 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
   const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    startTransition(() => {
-      const allRanking = getRankingByDifficulty(selectedDifficulty);
-      setRanking(allRanking.slice(0, limit));
-      setHasMore(allRanking.length > limit);
-    });
+    const fetchRanking = async () => {
+      const allRanking = await getRankingByDifficulty(selectedDifficulty);
+      startTransition(() => {
+        setRanking(allRanking.slice(0, limit));
+        setHasMore(allRanking.length > limit);
+      });
+    };
+    fetchRanking();
   }, [selectedDifficulty, limit]);
 
   return (

@@ -1,0 +1,23 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Ranking {
+  id             String   @id @default(cuid())
+  nickname       String
+  score          Int
+  difficulty     String   // "easy" | "normal" | "hard"
+  accuracy       Float
+  wordsPerMinute Float
+  totalWords     Int
+  createdAt      DateTime @default(now())
+
+  @@index([difficulty, score(sort: Desc)])
+}

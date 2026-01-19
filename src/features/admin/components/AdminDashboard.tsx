@@ -14,7 +14,7 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/libs/storage";
-import { getRanking, clearRanking } from "@/libs/ranking";
+import { getRankingCount, clearRanking } from "@/libs/ranking";
 import { WordList } from "./WordList";
 import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
@@ -38,12 +38,16 @@ export function AdminDashboard() {
 
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
-    startTransition(() => {
-      setWords(getWords());
-      setCategories(getCategories());
-      setRankingCount(getRanking().length);
-      setIsLoaded(true);
-    });
+    const loadData = async () => {
+      const count = await getRankingCount();
+      startTransition(() => {
+        setWords(getWords());
+        setCategories(getCategories());
+        setRankingCount(count);
+        setIsLoaded(true);
+      });
+    };
+    loadData();
   }, []);
 
   // ワード操作
@@ -105,8 +109,8 @@ export function AdminDashboard() {
   };
 
   // ランキングリセット
-  const handleResetRanking = () => {
-    clearRanking();
+  const handleResetRanking = async () => {
+    await clearRanking();
     setRankingCount(0);
     setShowResetConfirm(false);
   };
