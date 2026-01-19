@@ -39,10 +39,8 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
   return (
     <div className="flex flex-col items-center gap-8 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg w-full">
       <h1 className="text-4xl font-bold text-zinc-800 dark:text-zinc-100">
-        タイピングゲーム
+        リグ打
       </h1>
-
-      <div className="text-6xl">🍣</div>
 
       {/* ニックネーム入力 */}
       <div className="w-full">
