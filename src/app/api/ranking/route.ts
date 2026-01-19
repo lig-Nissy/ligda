@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/libs/prisma";
 import { Difficulty } from "@/types";
-import type { Ranking } from "@prisma/client";
 
 const MAX_RANKING_ENTRIES = 100;
 
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
   });
 
   // RankingEntry形式に変換
-  const entries = rankings.map((r: Ranking) => ({
+  const entries = rankings.map((r: { id: string; nickname: string; score: number; difficulty: string; accuracy: number; wordsPerMinute: number; totalWords: number; createdAt: Date }) => ({
     id: r.id,
     nickname: r.nickname,
     score: r.score,

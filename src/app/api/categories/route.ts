@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/libs/prisma";
-import type { Category } from "@prisma/client";
 
 // カテゴリ一覧取得 (GET /api/categories)
 export async function GET() {
@@ -9,7 +8,7 @@ export async function GET() {
   });
 
   return NextResponse.json(
-    categories.map((c: Category) => ({
+    categories.map((c: { id: string; name: string; description: string; createdAt: Date; updatedAt: Date }) => ({
       id: c.id,
       name: c.name,
       description: c.description,
