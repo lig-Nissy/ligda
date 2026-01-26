@@ -181,7 +181,7 @@
 <h1>タイピングゲーム<br>管理者運用マニュアル</h1>
 
 <div class="cover-info">
-  <p>Version 2.0</p>
+  <p>Version 3.0</p>
   <p>最終更新日: 2026年1月</p>
   <p>データベース: Supabase (PostgreSQL)</p>
 </div>
@@ -195,9 +195,11 @@
     <li><a href="#category-management">4. カテゴリ管理</a></li>
     <li><a href="#csv-import">5. CSVインポート</a></li>
     <li><a href="#ranking-management">6. ランキング管理</a></li>
-    <li><a href="#game-settings">7. ゲーム設定について</a></li>
-    <li><a href="#database">8. データベース（Supabase）</a></li>
-    <li><a href="#troubleshooting">9. トラブルシューティング</a></li>
+    <li><a href="#member-management">7. メンバー管理（LigMode）</a></li>
+    <li><a href="#ligmode">8. LigMode について</a></li>
+    <li><a href="#game-settings">9. ゲーム設定について</a></li>
+    <li><a href="#database">10. データベース（Supabase）</a></li>
+    <li><a href="#troubleshooting">11. トラブルシューティング</a></li>
   </ul>
 </div>
 
@@ -228,6 +230,10 @@
   <tr>
     <td>ランキング管理</td>
     <td>ランキングデータのリセット</td>
+  </tr>
+  <tr>
+    <td>メンバー管理</td>
+    <td>LigMode用の社員情報（名前・あだ名・顔写真）の管理</td>
   </tr>
 </table>
 
@@ -288,6 +294,10 @@
   <tr>
     <td>管理画面</td>
     <td><code>/admin</code></td>
+  </tr>
+  <tr>
+    <td>LigMode</td>
+    <td><code>/ligmode</code>（隠しモード）</td>
   </tr>
 </table>
 
@@ -577,7 +587,144 @@ container,container,alphabet,IT用語,0,1,2</pre>
 
 <div class="page-break"></div>
 
-<h2 id="game-settings">7. ゲーム設定について</h2>
+<h2 id="member-management">7. メンバー管理（LigMode）</h2>
+
+<p>「メンバー管理」タブでは、LigMode で出題される社員の情報を管理します。</p>
+
+<h3>メンバー一覧の確認</h3>
+<p>登録されているメンバーがカード形式で表示されます。各カードには以下の情報が含まれます：</p>
+<ul>
+  <li><strong>顔写真:</strong> 登録された写真のサムネイル</li>
+  <li><strong>名前:</strong> フルネーム（漢字など）</li>
+  <li><strong>名前の読み:</strong> ひらがなの読み</li>
+  <li><strong>あだ名:</strong> 登録されている場合に表示</li>
+</ul>
+
+<h3>メンバーの追加</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    「メンバーを追加」ボタンをクリックします。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    必要な情報を入力します：
+    <ul>
+      <li><strong>名前:</strong> 表示名（例: 山田太郎）【必須】</li>
+      <li><strong>名前の読み:</strong> ひらがな（例: やまだたろう）【必須】</li>
+      <li><strong>あだ名:</strong> ニックネーム（例: やまちゃん）【任意】</li>
+      <li><strong>あだ名の読み:</strong> ひらがな（例: やまちゃん）【あだ名入力時】</li>
+      <li><strong>顔写真:</strong> 画像ファイルを選択（最大5MB）【必須】</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">3</div>
+  <div class="step-content">
+    「追加」ボタンをクリックして保存します。
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>写真について:</strong> 写真はBase64形式でデータベースに直接保存されます。1枚あたり300KB〜500KB程度を推奨します。80名程度（約40MB）であれば問題なく保存できます。
+</div>
+
+<h3>メンバーの編集・削除</h3>
+<ul>
+  <li><strong>編集:</strong> メンバーカードの「編集」ボタンをクリック</li>
+  <li><strong>削除:</strong> メンバーカードの「削除」ボタンをクリック</li>
+</ul>
+
+<div class="warning-box">
+  <strong>注意:</strong> 削除したメンバーは復元できません。削除前に必ず確認してください。
+</div>
+
+<h3>あだ名の登録について</h3>
+<p>あだ名を登録すると、LigMode のゲーム中に「この人の名前は？」と「この人のあだ名は？」がランダムに出題されます。あだ名が未登録のメンバーは、常に名前を聞く問題が出題されます。</p>
+
+<div class="page-break"></div>
+
+<h2 id="ligmode">8. LigMode について</h2>
+
+<p>LigMode は社員の顔写真を見て名前やあだ名を当てるクイズモードです。通常のタイピングモードとは独立した隠し機能として実装されています。</p>
+
+<h3>LigMode へのアクセス方法</h3>
+
+<div class="step">
+  <div class="step-number">1</div>
+  <div class="step-content">
+    ゲームトップ画面のニックネーム欄に <code>LifeIsGood</code> と入力します。
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-number">2</div>
+  <div class="step-content">
+    「スタート」ボタンをクリックすると、LigMode のメニュー画面に移動します。
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>直接アクセス:</strong> <code>/ligmode</code> に直接アクセスすることも可能です。
+</div>
+
+<h3>ゲームルール</h3>
+
+<table>
+  <tr>
+    <th>項目</th>
+    <th>内容</th>
+  </tr>
+  <tr>
+    <td>制限時間</td>
+    <td>全体90秒 + 1問あたり10秒</td>
+  </tr>
+  <tr>
+    <td>出題形式</td>
+    <td>顔写真を見て名前またはあだ名を入力</td>
+  </tr>
+  <tr>
+    <td>問題タイプ</td>
+    <td>「名前」と「あだ名」がランダムに出題</td>
+  </tr>
+  <tr>
+    <td>回答方法</td>
+    <td>テキスト入力 + Enterキーで送信</td>
+  </tr>
+  <tr>
+    <td>正解判定</td>
+    <td>名前・読み仮名の大文字小文字を区別しない</td>
+  </tr>
+  <tr>
+    <td>コンボボーナス</td>
+    <td>5問連続正解で+1秒（最大+3秒）</td>
+  </tr>
+  <tr>
+    <td>出題範囲</td>
+    <td>登録メンバー全員を1回ずつ出題（重複なし）</td>
+  </tr>
+  <tr>
+    <td>終了条件</td>
+    <td>制限時間切れ、または全員出題完了</td>
+  </tr>
+</table>
+
+<h3>ランキング</h3>
+<p>ゲーム終了後にスコアが自動的にランキングに登録されます。LigMode のランキングは通常モードとは別に管理されています。</p>
+<ul>
+  <li>メニュー画面の右側（PC表示時）にTOP5ランキングが表示されます</li>
+  <li>ゲーム結果画面にもTOP5ランキングと順位が表示されます</li>
+  <li>最大100件まで保存されます</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2 id="game-settings">9. ゲーム設定について</h2>
 
 <p>ゲームの難易度設定は以下の通りです（システム固定値）。</p>
 
@@ -644,7 +791,7 @@ container,container,alphabet,IT用語,0,1,2</pre>
 
 <div class="page-break"></div>
 
-<h2 id="database">8. データベース（Supabase）</h2>
+<h2 id="database">10. データベース（Supabase）</h2>
 
 <p>本システムのデータはSupabaseのPostgreSQLデータベースに保存されています。緊急時やバッチ処理が必要な場合は、Supabaseダッシュボードから直接操作できます。</p>
 
@@ -694,6 +841,16 @@ container,container,alphabet,IT用語,0,1,2</pre>
     <td>ワードマスタ</td>
     <td>text, reading, inputType, categoryId, weightEasy/Normal/Hard</td>
   </tr>
+  <tr>
+    <td><code>Member</code></td>
+    <td>LigMode メンバー</td>
+    <td>name, nameReading, nickname, nicknameReading, photoData</td>
+  </tr>
+  <tr>
+    <td><code>LigRanking</code></td>
+    <td>LigMode ランキング</td>
+    <td>nickname, score, correctCount, missCount, accuracy, totalMembers</td>
+  </tr>
 </table>
 
 <h3>SQLでの直接操作</h3>
@@ -718,7 +875,12 @@ container,container,alphabet,IT用語,0,1,2</pre>
 <p><strong>データ件数の確認:</strong></p>
 <pre>SELECT COUNT(*) FROM "Word";
 SELECT COUNT(*) FROM "Ranking";
-SELECT COUNT(*) FROM "Category";</pre>
+SELECT COUNT(*) FROM "Category";
+SELECT COUNT(*) FROM "Member";
+SELECT COUNT(*) FROM "LigRanking";</pre>
+
+<p><strong>LigMode ランキングをリセット:</strong></p>
+<pre>DELETE FROM "LigRanking";</pre>
 
 <h3>バックアップ</h3>
 
@@ -744,7 +906,7 @@ SELECT COUNT(*) FROM "Category";</pre>
 
 <div class="page-break"></div>
 
-<h2 id="troubleshooting">9. トラブルシューティング</h2>
+<h2 id="troubleshooting">11. トラブルシューティング</h2>
 
 <h3>よくある問題と解決方法</h3>
 
