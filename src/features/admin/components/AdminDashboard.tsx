@@ -19,7 +19,7 @@ import {
   updateMember,
   deleteMember,
 } from "@/libs/storage";
-import { getRankingCount, clearRanking } from "@/libs/ranking";
+import { getRankingCount, clearRanking, getLigRankingCount, clearLigRanking } from "@/libs/ranking";
 import { WordList } from "./WordList";
 import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
@@ -44,21 +44,25 @@ export function AdminDashboard() {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showMemberForm, setShowMemberForm] = useState(false);
   const [rankingCount, setRankingCount] = useState(0);
+  const [ligRankingCount, setLigRankingCount] = useState(0);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showLigResetConfirm, setShowLigResetConfirm] = useState(false);
 
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
     const loadData = async () => {
-      const [wordsData, categoriesData, count, membersData] = await Promise.all([
+      const [wordsData, categoriesData, count, ligCount, membersData] = await Promise.all([
         getWords(),
         getCategories(),
         getRankingCount(),
+        getLigRankingCount(),
         getMembers(),
       ]);
       startTransition(() => {
         setWords(wordsData);
         setCategories(categoriesData);
         setRankingCount(count);
+        setLigRankingCount(ligCount);
         setMembers(membersData);
         setIsLoaded(true);
       });
@@ -165,6 +169,13 @@ export function AdminDashboard() {
     await clearRanking();
     setRankingCount(0);
     setShowResetConfirm(false);
+  };
+
+  // LigModeランキングリセット
+  const handleResetLigRanking = async () => {
+    await clearLigRanking();
+    setLigRankingCount(0);
+    setShowLigResetConfirm(false);
   };
 
   if (!isLoaded) {
@@ -441,6 +452,46 @@ export function AdminDashboard() {
                   className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ランキングをリセット
+                </button>
+              )}
+            </div>
+
+            {/* LigMode ランキング */}
+            <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                LIGMode ランキング管理
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                現在のランキング登録数: <span className="font-bold">{ligRankingCount}件</span>
+              </p>
+
+              {showLigResetConfirm ? (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-red-600 dark:text-red-400 font-medium mb-4">
+                    本当にLIGModeランキングをリセットしますか？この操作は取り消せません。
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleResetLigRanking}
+                      className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                    >
+                      リセットする
+                    </button>
+                    <button
+                      onClick={() => setShowLigResetConfirm(false)}
+                      className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLigResetConfirm(true)}
+                  disabled={ligRankingCount === 0}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  LIGModeランキングをリセット
                 </button>
               )}
             </div>

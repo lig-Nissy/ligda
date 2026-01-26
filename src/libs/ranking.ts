@@ -94,6 +94,19 @@ export async function addLigRankingEntry(
   return res.json();
 }
 
+// LigModeランキング件数取得
+export async function getLigRankingCount(): Promise<number> {
+  const res = await fetch("/api/lig-ranking/count");
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.count;
+}
+
+// LigModeランキングをリセット
+export async function clearLigRanking(): Promise<void> {
+  await fetch("/api/lig-ranking/clear", { method: "DELETE" });
+}
+
 // LigModeランキング内の順位を取得
 export async function getLigRank(score: number): Promise<number> {
   const ranking = await getLigRanking();
