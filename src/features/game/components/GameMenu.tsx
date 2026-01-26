@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Difficulty, Category } from "@/types";
 import { getCategories } from "@/libs/storage";
 import { getSavedNickname, saveNickname } from "@/libs/ranking";
+import { detectInjection } from "@/libs/injection";
 
 interface GameMenuProps {
   onStart: (difficulty: Difficulty, categoryId: string | null, nickname: string) => void;
@@ -38,6 +39,12 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
 
   const handleStart = () => {
     const trimmedNickname = nickname.trim() || "名無し";
+
+    if (detectInjection(nickname)) {
+      router.push("/nice-try");
+      return;
+    }
+
     saveNickname(trimmedNickname);
 
     if (trimmedNickname === "LifeIsGood") {

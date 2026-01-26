@@ -1,17 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LigGameScreen, LigRanking } from "@/features/game";
 import { getSavedNickname, saveNickname } from "@/libs/ranking";
+import { detectInjection } from "@/libs/injection";
 
 type Screen = "menu" | "game";
 
 export default function LigModePage() {
+  const router = useRouter();
   const [screen, setScreen] = useState<Screen>("menu");
   const [nickname, setNickname] = useState(() => getSavedNickname());
 
   const handleStart = () => {
+    if (detectInjection(nickname)) {
+      router.push("/nice-try");
+      return;
+    }
     const trimmedNickname = nickname.trim() || "名無し";
     saveNickname(trimmedNickname);
     setScreen("game");
