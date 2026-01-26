@@ -1,4 +1,4 @@
-import { RankingEntry, Difficulty } from "@/types";
+import { RankingEntry, Difficulty, LigRankingEntry } from "@/types";
 
 const NICKNAME_KEY = "typing_game_nickname";
 
@@ -70,4 +70,33 @@ export async function getRankingCount(): Promise<number> {
 // ランキングをリセット（全削除）（API経由）
 export async function clearRanking(): Promise<void> {
   await fetch("/api/ranking/clear", { method: "DELETE" });
+}
+
+// === LigMode ランキング ===
+
+// LigModeランキング取得
+export async function getLigRanking(limit?: number): Promise<LigRankingEntry[]> {
+  const params = limit ? `?limit=${limit}` : "";
+  const res = await fetch(`/api/lig-ranking${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// LigModeランキングに追加
+export async function addLigRankingEntry(
+  entry: Omit<LigRankingEntry, "id" | "createdAt">
+): Promise<LigRankingEntry> {
+  const res = await fetch("/api/lig-ranking", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  });
+  return res.json();
+}
+
+// LigModeランキング内の順位を取得
+export async function getLigRank(score: number): Promise<number> {
+  const ranking = await getLigRanking();
+  const rank = ranking.findIndex((entry) => score > entry.score);
+  return rank === -1 ? ranking.length + 1 : rank + 1;
 }

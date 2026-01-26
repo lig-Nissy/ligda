@@ -3,7 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Word, Category, DifficultyWeights, InputType } from "@/types";
+import { Word, Category, Member, DifficultyWeights, InputType } from "@/types";
 import {
   getWords,
   addWord,
@@ -14,6 +14,10 @@ import {
   addCategory,
   updateCategory,
   deleteCategory,
+  getMembers,
+  addMember,
+  updateMember,
+  deleteMember,
 } from "@/libs/storage";
 import { getRankingCount, clearRanking } from "@/libs/ranking";
 import { WordList } from "./WordList";
@@ -21,8 +25,10 @@ import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
 import { CategoryForm } from "./CategoryForm";
 import { CsvUpload } from "./CsvUpload";
+import { MemberList } from "./MemberList";
+import { MemberForm } from "./MemberForm";
 
-type Tab = "words" | "categories" | "import" | "ranking";
+type Tab = "words" | "categories" | "import" | "ranking" | "members";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
@@ -30,25 +36,30 @@ export function AdminDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const [members, setMembers] = useState<Member[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [showWordForm, setShowWordForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [showMemberForm, setShowMemberForm] = useState(false);
   const [rankingCount, setRankingCount] = useState(0);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
     const loadData = async () => {
-      const [wordsData, categoriesData, count] = await Promise.all([
+      const [wordsData, categoriesData, count, membersData] = await Promise.all([
         getWords(),
         getCategories(),
         getRankingCount(),
+        getMembers(),
       ]);
       startTransition(() => {
         setWords(wordsData);
         setCategories(categoriesData);
         setRankingCount(count);
+        setMembers(membersData);
         setIsLoaded(true);
       });
     };
@@ -117,6 +128,36 @@ export function AdminDashboard() {
     ]);
     setCategories(categoriesData);
     setWords(wordsData);
+  };
+
+  // メンバー操作
+  const handleSaveMember = async (data: {
+    name: string;
+    nameReading: string;
+    nickname: string | null;
+    nicknameReading: string | null;
+    photoData: string;
+  }) => {
+    if (editingMember) {
+      await updateMember(editingMember.id, data);
+    } else {
+      await addMember(data);
+    }
+    const membersData = await getMembers();
+    setMembers(membersData);
+    setShowMemberForm(false);
+    setEditingMember(null);
+  };
+
+  const handleEditMember = (member: Member) => {
+    setEditingMember(member);
+    setShowMemberForm(true);
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    await deleteMember(id);
+    const membersData = await getMembers();
+    setMembers(membersData);
   };
 
   // ランキングリセット
@@ -195,6 +236,16 @@ export function AdminDashboard() {
             }`}
           >
             CSVインポート
+          </button>
+          <button
+            onClick={() => setTab("members")}
+            className={`px-4 py-2 font-medium -mb-px ${
+              tab === "members"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            メンバー管理
           </button>
           <button
             onClick={() => setTab("ranking")}
@@ -311,6 +362,45 @@ export function AdminDashboard() {
                 }}
               />
             </div>
+          </div>
+        )}
+
+        {tab === "members" && (
+          <div className="space-y-6">
+            {showMemberForm ? (
+              <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+                <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                  {editingMember ? "メンバーを編集" : "メンバーを追加"}
+                </h2>
+                <MemberForm
+                  member={editingMember}
+                  onSave={handleSaveMember}
+                  onCancel={() => {
+                    setShowMemberForm(false);
+                    setEditingMember(null);
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <p className="text-zinc-600 dark:text-zinc-400">
+                    {members.length}件のメンバー
+                  </p>
+                  <button
+                    onClick={() => setShowMemberForm(true)}
+                    className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600"
+                  >
+                    メンバーを追加
+                  </button>
+                </div>
+                <MemberList
+                  members={members}
+                  onEdit={handleEditMember}
+                  onDelete={handleDeleteMember}
+                />
+              </>
+            )}
           </div>
         )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Difficulty, Category } from "@/types";
 import { getCategories } from "@/libs/storage";
@@ -18,6 +19,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, { name: string; description: string 
 };
 
 export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
+  const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,6 +39,12 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
   const handleStart = () => {
     const trimmedNickname = nickname.trim() || "名無し";
     saveNickname(trimmedNickname);
+
+    if (trimmedNickname === "LifeIsGood") {
+      router.push("/ligmode");
+      return;
+    }
+
     onStart(difficulty, categoryId, trimmedNickname);
   };
 

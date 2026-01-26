@@ -39,6 +39,18 @@ export interface Category {
   updatedAt: string;
 }
 
+// メンバー（LigMode用）
+export interface Member {
+  id: string;
+  name: string;
+  nameReading: string;
+  nickname: string | null;
+  nicknameReading: string | null;
+  photoData: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // SVG画像
 export interface SvgImage {
   id: string;
@@ -97,6 +109,18 @@ export interface RankingEntry {
   accuracy: number;
   wordsPerMinute: number;
   totalWords: number;
+  createdAt: string;
+}
+
+// LigMode ランキングエントリ
+export interface LigRankingEntry {
+  id: string;
+  nickname: string;
+  score: number;
+  correctCount: number;
+  missCount: number;
+  accuracy: number;
+  totalMembers: number;
   createdAt: string;
 }
 

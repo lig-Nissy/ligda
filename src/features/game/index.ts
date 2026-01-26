@@ -5,3 +5,7 @@ export { GameStats } from "./components/GameStats";
 export { TypingDisplay } from "./components/TypingDisplay";
 export { Ranking } from "./components/Ranking";
 export { useTypingGame } from "./hooks/useTypingGame";
+export { LigGameScreen } from "./components/LigGameScreen";
+export { LigTypingDisplay } from "./components/LigTypingDisplay";
+export { LigRanking } from "./components/LigRanking";
+export { useLigGame } from "./hooks/useLigGame";
