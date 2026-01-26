@@ -110,6 +110,6 @@ export async function clearLigRanking(): Promise<void> {
 // LigModeランキング内の順位を取得
 export async function getLigRank(score: number): Promise<number> {
   const ranking = await getLigRanking();
-  const rank = ranking.findIndex((entry) => score > entry.score);
+  const rank = ranking.findIndex((entry) => score >= entry.score);
   return rank === -1 ? ranking.length + 1 : rank + 1;
 }

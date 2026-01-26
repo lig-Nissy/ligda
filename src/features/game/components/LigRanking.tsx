@@ -20,7 +20,7 @@ export function LigRanking({ highlightEntryId, limit = 10 }: LigRankingProps) {
       });
     };
     fetchRanking();
-  }, [limit]);
+  }, [limit, highlightEntryId]);
 
   return (
     <div className="w-full">
