@@ -46,3 +46,27 @@ model Word {
 
   @@index([categoryId])
 }
+
+model LigRanking {
+  id           String   @id @default(cuid())
+  nickname     String
+  score        Int
+  correctCount Int
+  missCount    Int
+  accuracy     Float
+  totalMembers Int
+  createdAt    DateTime @default(now())
+
+  @@index([score(sort: Desc)])
+}
+
+model Member {
+  id              String   @id @default(cuid())
+  name            String   // 表示名（漢字など）
+  nameReading     String   // 名前の読み（ひらがな）
+  nickname        String?  // あだ名（表示用、任意）
+  nicknameReading String?  // あだ名の読み（ひらがな、任意）
+  photoData       String   // 写真（Base64 data URL）
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

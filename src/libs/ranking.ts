@@ -1,4 +1,4 @@
-import { RankingEntry, Difficulty } from "@/types";
+import { RankingEntry, Difficulty, LigRankingEntry } from "@/types";
 
 const NICKNAME_KEY = "typing_game_nickname";
 
@@ -27,14 +27,14 @@ export async function addRankingEntry(
   return res.json();
 }
 
-// ランキング内の順位を取得
+// ランキング内の順位を取得（エントリーIDで正確な順位を取得）
 export async function getRank(
-  score: number,
+  entryId: string,
   difficulty: Difficulty
 ): Promise<number> {
   const ranking = await getRankingByDifficulty(difficulty);
-  const rank = ranking.findIndex((entry) => score > entry.score);
-  return rank === -1 ? ranking.length + 1 : rank + 1;
+  const index = ranking.findIndex((entry) => entry.id === entryId);
+  return index === -1 ? ranking.length + 1 : index + 1;
 }
 
 // トップ10を取得
@@ -70,4 +70,46 @@ export async function getRankingCount(): Promise<number> {
 // ランキングをリセット（全削除）（API経由）
 export async function clearRanking(): Promise<void> {
   await fetch("/api/ranking/clear", { method: "DELETE" });
+}
+
+// === LigMode ランキング ===
+
+// LigModeランキング取得
+export async function getLigRanking(limit?: number): Promise<LigRankingEntry[]> {
+  const params = limit ? `?limit=${limit}` : "";
+  const res = await fetch(`/api/lig-ranking${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// LigModeランキングに追加
+export async function addLigRankingEntry(
+  entry: Omit<LigRankingEntry, "id" | "createdAt">
+): Promise<LigRankingEntry> {
+  const res = await fetch("/api/lig-ranking", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  });
+  return res.json();
+}
+
+// LigModeランキング件数取得
+export async function getLigRankingCount(): Promise<number> {
+  const res = await fetch("/api/lig-ranking/count");
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.count;
+}
+
+// LigModeランキングをリセット
+export async function clearLigRanking(): Promise<void> {
+  await fetch("/api/lig-ranking/clear", { method: "DELETE" });
+}
+
+// LigModeランキング内の順位を取得（エントリーIDで正確な順位を取得）
+export async function getLigRank(entryId: string): Promise<number> {
+  const ranking = await getLigRanking();
+  const index = ranking.findIndex((entry) => entry.id === entryId);
+  return index === -1 ? ranking.length + 1 : index + 1;
 }

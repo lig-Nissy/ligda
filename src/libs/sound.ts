@@ -11,25 +11,53 @@ function getAudioContext(): AudioContext | null {
   return audioContext;
 }
 
-// タイプ音（短いクリック音）
+// タイプ音（カタカタ音 - メカニカルキーボード風）
 export function playTypeSound(): void {
   const ctx = getAudioContext();
   if (!ctx) return;
 
-  const oscillator = ctx.createOscillator();
-  const gainNode = ctx.createGain();
+  const now = ctx.currentTime;
 
-  oscillator.connect(gainNode);
-  gainNode.connect(ctx.destination);
+  // ノイズバッファでクリック音を生成
+  const bufferSize = Math.floor(ctx.sampleRate * 0.04);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.08));
+  }
 
-  oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+  // キーを押す音（カタの「カ」）
+  const click1 = ctx.createBufferSource();
+  click1.buffer = buffer;
+  const bandpass1 = ctx.createBiquadFilter();
+  bandpass1.type = "bandpass";
+  bandpass1.frequency.setValueAtTime(3500, now);
+  bandpass1.Q.setValueAtTime(1.5, now);
+  const gain1 = ctx.createGain();
+  gain1.gain.setValueAtTime(0.35, now);
+  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+  click1.connect(bandpass1);
+  bandpass1.connect(gain1);
+  gain1.connect(ctx.destination);
+  click1.start(now);
+  click1.stop(now + 0.025);
 
-  gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-  oscillator.start(ctx.currentTime);
-  oscillator.stop(ctx.currentTime + 0.05);
+  // キーが底打ちする音（カタの「タ」）
+  const click2 = ctx.createBufferSource();
+  click2.buffer = buffer;
+  const bandpass2 = ctx.createBiquadFilter();
+  bandpass2.type = "bandpass";
+  bandpass2.frequency.setValueAtTime(5000, now + 0.015);
+  bandpass2.Q.setValueAtTime(2.0, now + 0.015);
+  const gain2 = ctx.createGain();
+  gain2.gain.setValueAtTime(0.001, now);
+  gain2.gain.setValueAtTime(0.25, now + 0.015);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+  click2.connect(bandpass2);
+  bandpass2.connect(gain2);
+  gain2.connect(ctx.destination);
+  click2.start(now);
+  click2.stop(now + 0.04);
 }
 
 // ミス音（低い音）

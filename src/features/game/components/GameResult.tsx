@@ -32,7 +32,7 @@ export function GameResult({ result, difficulty, nickname, onRestart, onBack }: 
         wordsPerMinute: result.wordsPerMinute,
         totalWords: result.totalWords,
       });
-      const currentRank = await getRank(result.score, difficulty);
+      const currentRank = await getRank(entry.id, difficulty);
       startTransition(() => {
         setSavedEntryId(entry.id);
         setRank(currentRank);

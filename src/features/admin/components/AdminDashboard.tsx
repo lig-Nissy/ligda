@@ -3,7 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Word, Category, DifficultyWeights, InputType } from "@/types";
+import { Word, Category, Member, DifficultyWeights, InputType } from "@/types";
 import {
   getWords,
   addWord,
@@ -14,15 +14,21 @@ import {
   addCategory,
   updateCategory,
   deleteCategory,
+  getMembers,
+  addMember,
+  updateMember,
+  deleteMember,
 } from "@/libs/storage";
-import { getRankingCount, clearRanking } from "@/libs/ranking";
+import { getRankingCount, clearRanking, getLigRankingCount, clearLigRanking } from "@/libs/ranking";
 import { WordList } from "./WordList";
 import { WordForm } from "./WordForm";
 import { CategoryList } from "./CategoryList";
 import { CategoryForm } from "./CategoryForm";
 import { CsvUpload } from "./CsvUpload";
+import { MemberList } from "./MemberList";
+import { MemberForm } from "./MemberForm";
 
-type Tab = "words" | "categories" | "import" | "ranking";
+type Tab = "words" | "categories" | "import" | "ranking" | "members";
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("words");
@@ -30,25 +36,34 @@ export function AdminDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const [members, setMembers] = useState<Member[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [showWordForm, setShowWordForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [showMemberForm, setShowMemberForm] = useState(false);
   const [rankingCount, setRankingCount] = useState(0);
+  const [ligRankingCount, setLigRankingCount] = useState(0);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showLigResetConfirm, setShowLigResetConfirm] = useState(false);
 
   // クライアントサイドでのみデータを読み込む
   useEffect(() => {
     const loadData = async () => {
-      const [wordsData, categoriesData, count] = await Promise.all([
+      const [wordsData, categoriesData, count, ligCount, membersData] = await Promise.all([
         getWords(),
         getCategories(),
         getRankingCount(),
+        getLigRankingCount(),
+        getMembers(),
       ]);
       startTransition(() => {
         setWords(wordsData);
         setCategories(categoriesData);
         setRankingCount(count);
+        setLigRankingCount(ligCount);
+        setMembers(membersData);
         setIsLoaded(true);
       });
     };
@@ -119,11 +134,48 @@ export function AdminDashboard() {
     setWords(wordsData);
   };
 
+  // メンバー操作
+  const handleSaveMember = async (data: {
+    name: string;
+    nameReading: string;
+    nickname: string | null;
+    nicknameReading: string | null;
+    photoData: string;
+  }) => {
+    if (editingMember) {
+      await updateMember(editingMember.id, data);
+    } else {
+      await addMember(data);
+    }
+    const membersData = await getMembers();
+    setMembers(membersData);
+    setShowMemberForm(false);
+    setEditingMember(null);
+  };
+
+  const handleEditMember = (member: Member) => {
+    setEditingMember(member);
+    setShowMemberForm(true);
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    await deleteMember(id);
+    const membersData = await getMembers();
+    setMembers(membersData);
+  };
+
   // ランキングリセット
   const handleResetRanking = async () => {
     await clearRanking();
     setRankingCount(0);
     setShowResetConfirm(false);
+  };
+
+  // LigModeランキングリセット
+  const handleResetLigRanking = async () => {
+    await clearLigRanking();
+    setLigRankingCount(0);
+    setShowLigResetConfirm(false);
   };
 
   if (!isLoaded) {
@@ -195,6 +247,16 @@ export function AdminDashboard() {
             }`}
           >
             CSVインポート
+          </button>
+          <button
+            onClick={() => setTab("members")}
+            className={`px-4 py-2 font-medium -mb-px ${
+              tab === "members"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            メンバー管理
           </button>
           <button
             onClick={() => setTab("ranking")}
@@ -314,6 +376,45 @@ export function AdminDashboard() {
           </div>
         )}
 
+        {tab === "members" && (
+          <div className="space-y-6">
+            {showMemberForm ? (
+              <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+                <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                  {editingMember ? "メンバーを編集" : "メンバーを追加"}
+                </h2>
+                <MemberForm
+                  member={editingMember}
+                  onSave={handleSaveMember}
+                  onCancel={() => {
+                    setShowMemberForm(false);
+                    setEditingMember(null);
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <p className="text-zinc-600 dark:text-zinc-400">
+                    {members.length}件のメンバー
+                  </p>
+                  <button
+                    onClick={() => setShowMemberForm(true)}
+                    className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600"
+                  >
+                    メンバーを追加
+                  </button>
+                </div>
+                <MemberList
+                  members={members}
+                  onEdit={handleEditMember}
+                  onDelete={handleDeleteMember}
+                />
+              </>
+            )}
+          </div>
+        )}
+
         {tab === "ranking" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
@@ -351,6 +452,46 @@ export function AdminDashboard() {
                   className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ランキングをリセット
+                </button>
+              )}
+            </div>
+
+            {/* LigMode ランキング */}
+            <div className="bg-white dark:bg-zinc-900 rounded-lg p-6 shadow">
+              <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-4">
+                LIGMode ランキング管理
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                現在のランキング登録数: <span className="font-bold">{ligRankingCount}件</span>
+              </p>
+
+              {showLigResetConfirm ? (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-red-600 dark:text-red-400 font-medium mb-4">
+                    本当にLIGModeランキングをリセットしますか？この操作は取り消せません。
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleResetLigRanking}
+                      className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                    >
+                      リセットする
+                    </button>
+                    <button
+                      onClick={() => setShowLigResetConfirm(false)}
+                      className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    >
+                      キャンセル
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowLigResetConfirm(true)}
+                  disabled={ligRankingCount === 0}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  LIGModeランキングをリセット
                 </button>
               )}
             </div>

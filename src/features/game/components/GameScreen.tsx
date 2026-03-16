@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTypingGame } from "../hooks/useTypingGame";
 import { TypingDisplay } from "./TypingDisplay";
 import { GameStats } from "./GameStats";
@@ -37,25 +38,18 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
   const { typed, remaining } = getTypingDisplay();
   const wordTimeProgress = getWordTimeProgress();
 
-  // ゲーム未初期化
+  // マウント時に自動でゲームを初期化
+  useEffect(() => {
+    if (status === "idle") {
+      initGame();
+    }
+  }, [status, initGame]);
+
+  // ゲーム初期化中
   if (status === "idle") {
     return (
       <div className="flex flex-col items-center gap-8">
-        <h2 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">
-          リグ打
-        </h2>
-        <button
-          onClick={initGame}
-          className="py-4 px-8 rounded-full bg-orange-500 text-white text-xl hover:bg-orange-600 transition-colors"
-        >
-          ゲームを準備する
-        </button>
-        <button
-          onClick={onBack}
-          className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-        >
-          戻る
-        </button>
+        <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -70,7 +64,6 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
         <p className="text-zinc-500 dark:text-zinc-400">
           スペースキーを押してスタート
         </p>
-        <div className="animate-pulse text-6xl">🍣</div>
         <button
           onClick={startGame}
           className="py-4 px-8 rounded-full bg-orange-500 text-white text-xl hover:bg-orange-600 transition-colors"

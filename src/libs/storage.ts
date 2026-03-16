@@ -1,4 +1,4 @@
-import { Word, Category, Difficulty } from "@/types";
+import { Word, Category, Difficulty, Member } from "@/types";
 
 // Words
 
@@ -96,6 +96,49 @@ export async function bulkAddWords(
   if (!res.ok) return 0;
   const data = await res.json();
   return data.count;
+}
+
+// Members
+
+// メンバー一覧取得（API経由）
+export async function getMembers(): Promise<Member[]> {
+  const res = await fetch("/api/members");
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// メンバー追加（API経由）
+export async function addMember(
+  member: Omit<Member, "id" | "createdAt" | "updatedAt">
+): Promise<Member> {
+  const res = await fetch("/api/members", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(member),
+  });
+  return res.json();
+}
+
+// メンバー更新（API経由）
+export async function updateMember(
+  id: string,
+  updates: Partial<Omit<Member, "id" | "createdAt">>
+): Promise<Member | null> {
+  const res = await fetch(`/api/members/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// メンバー削除（API経由）
+export async function deleteMember(id: string): Promise<boolean> {
+  const res = await fetch(`/api/members/${id}`, {
+    method: "DELETE",
+  });
+  return res.ok;
 }
 
 // Categories
