@@ -3,7 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Difficulty, Category } from "@/types";
+import { Difficulty, Category, DIFFICULTY_CONFIGS } from "@/types";
 import { getCategories } from "@/libs/storage";
 import { getSavedNickname, saveNickname } from "@/libs/ranking";
 import { detectInjection } from "@/libs/injection";
@@ -13,10 +13,14 @@ interface GameMenuProps {
   onDifficultyChange?: (difficulty: Difficulty) => void;
 }
 
-const DIFFICULTY_LABELS: Record<Difficulty, { name: string; description: string }> = {
-  easy: { name: "かんたん", description: "60秒 / ゆっくり" },
-  normal: { name: "ふつう", description: "90秒 / 標準スピード" },
-  hard: { name: "むずかしい", description: "120秒 / 高速" },
+const DIFFICULTY_LABELS: Record<Difficulty, { name: string; speed: string }> = {
+  easy: { name: "かんたん", speed: "ゆっくり" },
+  normal: { name: "ふつう", speed: "標準スピード" },
+  hard: { name: "むずかしい", speed: "高速" },
+};
+
+const getDifficultyDescription = (d: Difficulty): string => {
+  return `${DIFFICULTY_CONFIGS[d].timeLimit}秒 / ${DIFFICULTY_LABELS[d].speed}`;
 };
 
 export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
@@ -99,7 +103,7 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
                 {DIFFICULTY_LABELS[d].name}
               </div>
               <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                {DIFFICULTY_LABELS[d].description}
+                {getDifficultyDescription(d)}
               </div>
             </button>
           ))}

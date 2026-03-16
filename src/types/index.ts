@@ -128,7 +128,7 @@ export interface LigRankingEntry {
 // ワードの制限時間 = 文字数 × baseWordTime（min/maxで制限）
 export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
   easy: {
-    timeLimit: 60,
+    timeLimit: 45,
     baseWordTime: 1200, // 1文字1.2秒
     minWordTime: 4000, // 最低4秒
     maxWordTime: 12000, // 最大12秒
@@ -138,7 +138,7 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
     comboBonusTime: 5, // +5秒
   },
   normal: {
-    timeLimit: 90,
+    timeLimit: 60,
     baseWordTime: 800, // 1文字0.8秒
     minWordTime: 3000, // 最低3秒
     maxWordTime: 8000, // 最大8秒
@@ -148,7 +148,7 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
     comboBonusTime: 5, // +5秒
   },
   hard: {
-    timeLimit: 120,
+    timeLimit: 90,
     baseWordTime: 500, // 1文字0.5秒
     minWordTime: 2000, // 最低2秒
     maxWordTime: 5000, // 最大5秒
