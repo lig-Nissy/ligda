@@ -27,14 +27,14 @@ export async function addRankingEntry(
   return res.json();
 }
 
-// ランキング内の順位を取得
+// ランキング内の順位を取得（エントリーIDで正確な順位を取得）
 export async function getRank(
-  score: number,
+  entryId: string,
   difficulty: Difficulty
 ): Promise<number> {
   const ranking = await getRankingByDifficulty(difficulty);
-  const rank = ranking.findIndex((entry) => score > entry.score);
-  return rank === -1 ? ranking.length + 1 : rank + 1;
+  const index = ranking.findIndex((entry) => entry.id === entryId);
+  return index === -1 ? ranking.length + 1 : index + 1;
 }
 
 // トップ10を取得
