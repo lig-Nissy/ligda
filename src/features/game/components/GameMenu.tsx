@@ -132,7 +132,7 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
       {/* スタートボタン */}
       <button
         onClick={handleStart}
-        className="w-full py-4 px-8 rounded-full bg-orange-500 text-white text-xl font-bold hover:bg-orange-600 transition-colors"
+        className="w-full py-4 px-8 rounded-full bg-orange-500 text-white text-xl font-bold hover:bg-orange-600 transition-colors cursor-pointer"
       >
         スタート
       </button>
