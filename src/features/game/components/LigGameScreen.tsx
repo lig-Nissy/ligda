@@ -41,7 +41,7 @@ function LigGameResult({
         accuracy: result.accuracy,
         totalMembers: result.totalWords,
       });
-      const currentRank = await getLigRank(result.score);
+      const currentRank = await getLigRank(entry.id);
       startTransition(() => {
         setSavedEntryId(entry.id);
         setRank(currentRank);

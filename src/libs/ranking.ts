@@ -107,9 +107,9 @@ export async function clearLigRanking(): Promise<void> {
   await fetch("/api/lig-ranking/clear", { method: "DELETE" });
 }
 
-// LigModeランキング内の順位を取得
-export async function getLigRank(score: number): Promise<number> {
+// LigModeランキング内の順位を取得（エントリーIDで正確な順位を取得）
+export async function getLigRank(entryId: string): Promise<number> {
   const ranking = await getLigRanking();
-  const rank = ranking.findIndex((entry) => score >= entry.score);
-  return rank === -1 ? ranking.length + 1 : rank + 1;
+  const index = ranking.findIndex((entry) => entry.id === entryId);
+  return index === -1 ? ranking.length + 1 : index + 1;
 }
