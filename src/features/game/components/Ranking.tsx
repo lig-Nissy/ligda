@@ -22,17 +22,20 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(difficulty);
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRanking = async () => {
+      setIsLoading(true);
       const allRanking = await getRankingByDifficulty(selectedDifficulty);
       startTransition(() => {
         setRanking(allRanking.slice(0, limit));
         setHasMore(allRanking.length > limit);
+        setIsLoading(false);
       });
     };
     fetchRanking();
-  }, [selectedDifficulty, limit]);
+  }, [selectedDifficulty, limit, highlightEntryId]);
 
   return (
     <div className="w-full">
@@ -58,7 +61,11 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
       </div>
 
       {/* ランキングリスト */}
-      {ranking.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin h-6 w-6 border-2 border-orange-500 border-t-transparent rounded-full"></div>
+        </div>
+      ) : ranking.length === 0 ? (
         <div className="text-center py-8 text-zinc-500 dark:text-zinc-400 text-sm">
           まだ記録がありません
         </div>

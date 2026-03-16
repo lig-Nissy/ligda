@@ -11,12 +11,15 @@ interface LigRankingProps {
 
 export function LigRanking({ highlightEntryId, limit = 10 }: LigRankingProps) {
   const [ranking, setRanking] = useState<LigRankingEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchRanking = async () => {
+      setIsLoading(true);
       const all = await getLigRanking();
       startTransition(() => {
         setRanking(all.slice(0, limit));
+        setIsLoading(false);
       });
     };
     fetchRanking();
@@ -28,7 +31,11 @@ export function LigRanking({ highlightEntryId, limit = 10 }: LigRankingProps) {
         ランキング
       </h3>
 
-      {ranking.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin h-6 w-6 border-2 border-orange-500 border-t-transparent rounded-full"></div>
+        </div>
+      ) : ranking.length === 0 ? (
         <div className="text-center py-8 text-zinc-500 dark:text-zinc-400 text-sm">
           まだ記録がありません
         </div>
