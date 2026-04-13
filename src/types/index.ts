@@ -106,6 +106,7 @@ export interface RankingEntry {
   nickname: string;
   score: number;
   difficulty: Difficulty;
+  categoryId: string | null; // null = すべてのカテゴリ
   accuracy: number;
   wordsPerMinute: number;
   totalWords: number;

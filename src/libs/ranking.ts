@@ -6,11 +6,16 @@ function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
 
-// 難易度別ランキング取得（API経由）
+// 難易度・カテゴリ別ランキング取得（API経由）
 export async function getRankingByDifficulty(
-  difficulty: Difficulty
+  difficulty: Difficulty,
+  categoryId?: string | null
 ): Promise<RankingEntry[]> {
-  const res = await fetch(`/api/ranking?difficulty=${difficulty}`);
+  const params = new URLSearchParams({ difficulty });
+  if (categoryId !== undefined) {
+    params.set("categoryId", categoryId || "");
+  }
+  const res = await fetch(`/api/ranking?${params.toString()}`);
   if (!res.ok) return [];
   return res.json();
 }
@@ -22,7 +27,10 @@ export async function addRankingEntry(
   const res = await fetch("/api/ranking", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(entry),
+    body: JSON.stringify({
+      ...entry,
+      categoryId: entry.categoryId || null,
+    }),
   });
   return res.json();
 }
@@ -30,9 +38,10 @@ export async function addRankingEntry(
 // ランキング内の順位を取得（エントリーIDで正確な順位を取得）
 export async function getRank(
   entryId: string,
-  difficulty: Difficulty
+  difficulty: Difficulty,
+  categoryId?: string | null
 ): Promise<number> {
-  const ranking = await getRankingByDifficulty(difficulty);
+  const ranking = await getRankingByDifficulty(difficulty, categoryId);
   const index = ranking.findIndex((entry) => entry.id === entryId);
   return index === -1 ? ranking.length + 1 : index + 1;
 }
@@ -40,9 +49,14 @@ export async function getRank(
 // トップ10を取得
 export async function getTopRanking(
   difficulty: Difficulty,
-  limit = 10
+  limit = 10,
+  categoryId?: string | null
 ): Promise<RankingEntry[]> {
-  const res = await fetch(`/api/ranking?difficulty=${difficulty}&limit=${limit}`);
+  const params = new URLSearchParams({ difficulty, limit: String(limit) });
+  if (categoryId !== undefined) {
+    params.set("categoryId", categoryId || "");
+  }
+  const res = await fetch(`/api/ranking?${params.toString()}`);
   if (!res.ok) return [];
   return res.json();
 }

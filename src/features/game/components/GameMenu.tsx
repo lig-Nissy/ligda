@@ -11,6 +11,7 @@ import { detectInjection } from "@/libs/injection";
 interface GameMenuProps {
   onStart: (difficulty: Difficulty, categoryId: string | null, nickname: string) => void;
   onDifficultyChange?: (difficulty: Difficulty) => void;
+  onCategoryChange?: (categoryId: string | null) => void;
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, { name: string; speed: string }> = {
@@ -23,7 +24,7 @@ const getDifficultyDescription = (d: Difficulty): string => {
   return `${DIFFICULTY_CONFIGS[d].timeLimit}秒 / ${DIFFICULTY_LABELS[d].speed}`;
 };
 
-export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
+export function GameMenu({ onStart, onDifficultyChange, onCategoryChange }: GameMenuProps) {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -117,7 +118,11 @@ export function GameMenu({ onStart, onDifficultyChange }: GameMenuProps) {
         </label>
         <select
           value={categoryId || ""}
-          onChange={(e) => setCategoryId(e.target.value || null)}
+          onChange={(e) => {
+            const newCategoryId = e.target.value || null;
+            setCategoryId(newCategoryId);
+            onCategoryChange?.(newCategoryId);
+          }}
           className="w-full p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
         >
           <option value="">すべてのカテゴリ</option>

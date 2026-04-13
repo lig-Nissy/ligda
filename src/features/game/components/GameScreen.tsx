@@ -80,6 +80,7 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
       <GameResult
         result={getResult()}
         difficulty={difficulty}
+        categoryId={categoryId}
         nickname={nickname}
         onRestart={initGame}
         onBack={onBack}

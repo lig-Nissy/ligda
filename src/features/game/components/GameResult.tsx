@@ -8,12 +8,13 @@ import { Ranking } from "./Ranking";
 interface GameResultProps {
   result: GameResultType;
   difficulty: Difficulty;
+  categoryId: string | null;
   nickname: string;
   onRestart: () => void;
   onBack: () => void;
 }
 
-export function GameResult({ result, difficulty, nickname, onRestart, onBack }: GameResultProps) {
+export function GameResult({ result, difficulty, categoryId, nickname, onRestart, onBack }: GameResultProps) {
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const hasSaved = useRef(false);
@@ -28,18 +29,19 @@ export function GameResult({ result, difficulty, nickname, onRestart, onBack }: 
         nickname,
         score: result.score,
         difficulty,
+        categoryId,
         accuracy: result.accuracy,
         wordsPerMinute: result.wordsPerMinute,
         totalWords: result.totalWords,
       });
-      const currentRank = await getRank(entry.id, difficulty);
+      const currentRank = await getRank(entry.id, difficulty, categoryId);
       startTransition(() => {
         setSavedEntryId(entry.id);
         setRank(currentRank);
       });
     };
     saveAndFetchRank();
-  }, [nickname, result, difficulty]);
+  }, [nickname, result, difficulty, categoryId]);
   return (
     <div className="flex flex-col items-center gap-8 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg max-w-md w-full">
       <h2 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">
@@ -105,7 +107,7 @@ export function GameResult({ result, difficulty, nickname, onRestart, onBack }: 
       </div>
 
       {/* ランキング */}
-      <Ranking difficulty={difficulty} highlightEntryId={savedEntryId ?? undefined} limit={5} showMoreLink />
+      <Ranking difficulty={difficulty} categoryId={categoryId} highlightEntryId={savedEntryId ?? undefined} limit={5} showMoreLink />
 
       <div className="flex gap-4 w-full">
         <button

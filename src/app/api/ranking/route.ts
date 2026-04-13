@@ -4,14 +4,23 @@ import { Difficulty } from "@/types";
 
 const MAX_RANKING_ENTRIES = 100;
 
-// ランキング取得 (GET /api/ranking?difficulty=normal&limit=10)
+// ランキング取得 (GET /api/ranking?difficulty=normal&categoryId=xxx&limit=10)
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const difficulty = searchParams.get("difficulty") as Difficulty | null;
+  const categoryId = searchParams.get("categoryId"); // null, "", または実際のID
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? parseInt(limitParam, 10) : MAX_RANKING_ENTRIES;
 
-  const where = difficulty ? { difficulty } : {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+  if (difficulty) {
+    where.difficulty = difficulty;
+  }
+  // categoryIdが指定された場合のみフィルタ（空文字は「すべてのカテゴリ」=categoryId: null）
+  if (categoryId !== null) {
+    where.categoryId = categoryId === "" ? null : categoryId;
+  }
 
   const rankings = await prisma.ranking.findMany({
     where,
@@ -20,11 +29,13 @@ export async function GET(request: NextRequest) {
   });
 
   // RankingEntry形式に変換
-  const entries = rankings.map((r: { id: string; nickname: string; score: number; difficulty: string; accuracy: number; wordsPerMinute: number; totalWords: number; createdAt: Date }) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const entries = rankings.map((r: any) => ({
     id: r.id,
     nickname: r.nickname,
     score: r.score,
     difficulty: r.difficulty as Difficulty,
+    categoryId: r.categoryId ?? null,
     accuracy: r.accuracy,
     wordsPerMinute: r.wordsPerMinute,
     totalWords: r.totalWords,
@@ -38,7 +49,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const { nickname, score, difficulty, accuracy, wordsPerMinute, totalWords } =
+  const { nickname, score, difficulty, categoryId, accuracy, wordsPerMinute, totalWords } =
     body;
 
   // バリデーション
@@ -59,15 +70,16 @@ export async function POST(request: NextRequest) {
       nickname,
       score,
       difficulty,
+      categoryId: categoryId || null,
       accuracy,
       wordsPerMinute,
       totalWords,
     },
   });
 
-  // 上位MAX_RANKING_ENTRIES件以外を削除（難易度ごと）
+  // 上位MAX_RANKING_ENTRIES件以外を削除（難易度 + カテゴリごと）
   const rankings = await prisma.ranking.findMany({
-    where: { difficulty },
+    where: { difficulty, categoryId: categoryId || null },
     orderBy: { score: "desc" },
     skip: MAX_RANKING_ENTRIES,
     select: { id: true },
@@ -81,14 +93,17 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const entry = newEntry as any;
   return NextResponse.json({
-    id: newEntry.id,
-    nickname: newEntry.nickname,
-    score: newEntry.score,
-    difficulty: newEntry.difficulty as Difficulty,
-    accuracy: newEntry.accuracy,
-    wordsPerMinute: newEntry.wordsPerMinute,
-    totalWords: newEntry.totalWords,
-    createdAt: newEntry.createdAt.toISOString(),
+    id: entry.id,
+    nickname: entry.nickname,
+    score: entry.score,
+    difficulty: entry.difficulty as Difficulty,
+    categoryId: entry.categoryId ?? null,
+    accuracy: entry.accuracy,
+    wordsPerMinute: entry.wordsPerMinute,
+    totalWords: entry.totalWords,
+    createdAt: entry.createdAt.toISOString(),
   });
 }

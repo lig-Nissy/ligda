@@ -7,6 +7,7 @@ import { getTopRanking, getRankingByDifficulty } from "@/libs/ranking";
 
 interface RankingProps {
   difficulty: Difficulty;
+  categoryId?: string | null;
   highlightEntryId?: string;
   limit?: number;
   showMoreLink?: boolean;
@@ -18,7 +19,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   hard: "むずかしい",
 };
 
-export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink = false }: RankingProps) {
+export function Ranking({ difficulty, categoryId, highlightEntryId, limit = 10, showMoreLink = false }: RankingProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(difficulty);
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -27,7 +28,7 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
   useEffect(() => {
     const fetchRanking = async () => {
       setIsLoading(true);
-      const allRanking = await getRankingByDifficulty(selectedDifficulty);
+      const allRanking = await getRankingByDifficulty(selectedDifficulty, categoryId);
       startTransition(() => {
         setRanking(allRanking.slice(0, limit));
         setHasMore(allRanking.length > limit);
@@ -35,7 +36,7 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
       });
     };
     fetchRanking();
-  }, [selectedDifficulty, limit, highlightEntryId]);
+  }, [selectedDifficulty, categoryId, limit, highlightEntryId]);
 
   return (
     <div className="w-full">
@@ -118,7 +119,7 @@ export function Ranking({ difficulty, highlightEntryId, limit = 10, showMoreLink
       {/* もっと見るリンク */}
       {showMoreLink && hasMore && (
         <Link
-          href={`/ranking?difficulty=${selectedDifficulty}`}
+          href={`/ranking?difficulty=${selectedDifficulty}${categoryId ? `&categoryId=${categoryId}` : ""}`}
           className="block mt-4 text-center text-orange-500 hover:text-orange-600 text-sm font-medium"
         >
           もっと見る →
