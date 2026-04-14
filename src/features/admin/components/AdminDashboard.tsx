@@ -2,7 +2,8 @@
 
 import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/libs/supabase/client";
 import { Word, Category, Member, DifficultyWeights, InputType } from "@/types";
 import {
   getWords,
@@ -31,6 +32,7 @@ import { MemberForm } from "./MemberForm";
 type Tab = "words" | "categories" | "import" | "ranking" | "members";
 
 export function AdminDashboard() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("words");
   const [words, setWords] = useState<Word[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -202,9 +204,12 @@ export function AdminDashboard() {
               ゲームへ戻る
             </Link>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm("ログアウトしますか？")) {
-                  signOut({ callbackUrl: "/admin/login" });
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  router.push("/admin/login");
+                  router.refresh();
                 }
               }}
               className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 text-sm"
