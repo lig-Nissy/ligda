@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LIGDA - タイピングゲーム",
   description:
-    "LIGDAは楽しく遊べるタイピングゲームです。ランキング機能でスコアを競い合おう！",
+    "LIGDAは、自由にワードを登録して遊べるタイピングゲームです。自分の好きなワードを登録して、楽しくタイピング練習ができます。完全に自己満ですが、ぜひ遊んでみてください！",
 };
 
 export default function RootLayout({

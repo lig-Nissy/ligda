@@ -40,9 +40,9 @@ export function Ranking({ difficulty, categoryId, highlightEntryId, limit = 10, 
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-3">
+      <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-3">
         ランキング
-      </h3>
+      </h2>
 
       {/* 難易度タブ */}
       <div className="flex gap-1 mb-4">
