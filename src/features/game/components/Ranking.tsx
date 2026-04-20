@@ -3,7 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { Difficulty, RankingEntry } from "@/types";
-import { getTopRanking, getRankingByDifficulty } from "@/libs/ranking";
+import { getRankingByDifficulty } from "@/libs/ranking";
 
 interface RankingProps {
   difficulty: Difficulty;

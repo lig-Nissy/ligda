@@ -27,9 +27,9 @@ export function LigRanking({ highlightEntryId, limit = 10 }: LigRankingProps) {
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-3">
+      <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-3">
         ランキング
-      </h3>
+      </h2>
 
       {isLoading ? (
         <div className="flex justify-center py-8">
