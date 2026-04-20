@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "LIGDA - タイピングゲーム",
   description:
     "LIGDAは、自由にワードを登録して遊べるタイピングゲームです。自分の好きなワードを登録して、楽しくタイピング練習ができます。完全に自己満ですが、ぜひ遊んでみてください！",
+  icons: {
+    icon: "/images/lig-logo.png",
+  },
 };
 
 export default function RootLayout({
