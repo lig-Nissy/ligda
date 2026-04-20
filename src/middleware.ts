@@ -24,8 +24,9 @@ function isAllowedIp(clientIp: string | null): boolean {
     return true;
   }
 
-  if (!clientIp) {
-    return false;
+  // ローカル開発環境は許可（IP取得できない or localhost）
+  if (!clientIp || clientIp === "::1" || clientIp === "127.0.0.1") {
+    return true;
   }
 
   const allowedList = allowedIps.split(",").map((ip) => ip.trim());
