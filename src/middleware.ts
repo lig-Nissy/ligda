@@ -17,7 +17,7 @@ function getClientIp(request: NextRequest): string | null {
 }
 
 function isAllowedIp(clientIp: string | null): boolean {
-  const allowedIps = process.env.ALLOWED_IPS;
+  const allowedIps = process.env.IP_ALLOWLIST;
 
   // 環境変数が設定されていない場合は全て許可
   if (!allowedIps) {
