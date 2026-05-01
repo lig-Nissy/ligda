@@ -125,6 +125,16 @@ export interface LigRankingEntry {
   createdAt: string;
 }
 
+// ワード文字数ステージ設定（問題番号に応じて循環）
+// reading の文字数（ひらがな文字数 / アルファベット文字数）で判定
+export const WORD_LENGTH_STAGES = [
+  { min: 1, max: 6 },  // 1〜5問目
+  { min: 5, max: 8 },  // 6〜10問目
+  { min: 6, max: 99 }, // 11〜15問目
+] as const;
+
+export const WORD_LENGTH_STAGE_SIZE = 5; // 何問ごとにステージが変わるか
+
 // 難易度設定
 // ワードの制限時間 = 文字数 × baseWordTime（min/maxで制限）
 export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {

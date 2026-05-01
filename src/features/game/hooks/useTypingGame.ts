@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, startTransition } from "react";
-import { Word, Difficulty, GameResult, DIFFICULTY_CONFIGS } from "@/types";
+import { Word, Difficulty, GameResult, DIFFICULTY_CONFIGS, WORD_LENGTH_STAGES, WORD_LENGTH_STAGE_SIZE } from "@/types";
 import {
   hiraganaToRomajiPatterns,
   hiraganaToRomaji,
@@ -18,6 +18,21 @@ interface TypingState {
   currentInput: string;
   typedRomaji: string;
   displayRomaji: string;
+}
+
+// 問題番号からステージ（文字数範囲）を取得
+function getWordLengthStage(questionNumber: number) {
+  const stageIndex =
+    Math.floor((questionNumber - 1) / WORD_LENGTH_STAGE_SIZE) % WORD_LENGTH_STAGES.length;
+  return WORD_LENGTH_STAGES[stageIndex];
+}
+
+// ステージの文字数範囲に合うワードをランダムに選択
+function selectWordByStage(pool: Word[], questionNumber: number): Word {
+  const { min, max } = getWordLengthStage(questionNumber);
+  const filtered = pool.filter((w) => w.reading.length >= min && w.reading.length <= max);
+  const candidates = filtered.length > 0 ? filtered : pool;
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 // ワードの制限時間を計算
@@ -38,9 +53,11 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   const config = DIFFICULTY_CONFIGS[difficulty];
 
   const [status, setStatus] = useState<GameStatus>("idle");
-  const [words, setWords] = useState<Word[]>([]);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [typingState, setTypingState] = useState<TypingState | null>(null);
+
+  const allWordsRef = useRef<Word[]>([]);
+  const questionNumberRef = useRef(1);
 
   const [timeLeft, setTimeLeft] = useState(config.timeLimit);
   const [score, setScore] = useState(0);
@@ -64,18 +81,6 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
-
-  const currentWord = words[currentWordIndex] || null;
-
-  // ワードをシャッフル
-  const shuffleWords = useCallback((wordList: Word[]): Word[] => {
-    const shuffled = [...wordList];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }, []);
 
   // ワードタイマーをクリア
   const clearWordTimer = useCallback(() => {
@@ -107,38 +112,16 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     [config, clearWordTimer]
   );
 
-  // 次のワードへ（タイムアウト時も使用）
-  const nextWord = useCallback(
-    (isTimeout = false) => {
-      if (isTimeout) {
-        setSkippedWords((c) => c + 1);
-        setCombo(0); // タイムアウトでコンボリセット
-      }
-
-      // 次のワードのためにミスフラグをリセット
-      hadMissInCurrentWord.current = false;
-
-      const nextIndex = currentWordIndex + 1;
-      let word: Word;
-
-      if (nextIndex >= words.length) {
-        const shuffled = shuffleWords(words);
-        setWords(shuffled);
-        setCurrentWordIndex(0);
-        word = shuffled[0];
-      } else {
-        setCurrentWordIndex(nextIndex);
-        word = words[nextIndex];
-      }
-
-      // アルファベットの場合は1文字ずつのパターンとして扱う
+  // ワードからTypingStateを生成してセット
+  const applyWord = useCallback(
+    (word: Word) => {
       const patterns =
         word.inputType === "alphabet"
-          ? word.reading.split("").map((char) => [char])
+          ? word.reading.split("").map((char: string) => [char])
           : hiraganaToRomajiPatterns(word.reading);
       const displayRomaji =
         word.inputType === "alphabet" ? word.reading : hiraganaToRomaji(word.reading);
-
+      setCurrentWord(word);
       setTypingState({
         patterns,
         currentPatternIndex: 0,
@@ -146,12 +129,28 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         typedRomaji: "",
         displayRomaji,
       });
+    },
+    []
+  );
+
+  // 次のワードへ（タイムアウト時も使用）
+  const nextWord = useCallback(
+    (isTimeout = false) => {
+      if (isTimeout) {
+        setSkippedWords((c) => c + 1);
+        setCombo(0);
+      }
+      hadMissInCurrentWord.current = false;
+
+      questionNumberRef.current += 1;
+      const word = selectWordByStage(allWordsRef.current, questionNumberRef.current);
+      applyWord(word);
 
       if (status === "playing") {
         startWordTimer(word);
       }
     },
-    [currentWordIndex, words, shuffleWords, status, startWordTimer]
+    [status, startWordTimer, applyWord]
   );
 
   // ワードタイムアウト処理
@@ -171,10 +170,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       return;
     }
 
+    allWordsRef.current = allWords;
+    questionNumberRef.current = 1;
     clearWordTimer();
-    const shuffled = shuffleWords(allWords);
-    setWords(shuffled);
-    setCurrentWordIndex(0);
     setTimeLeft(config.timeLimit);
     setScore(0);
     setCorrectCount(0);
@@ -190,25 +188,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
     setWordTimeLimit(0);
     setStatus("ready");
 
-    const firstWord = shuffled[0];
-    // アルファベットの場合は1文字ずつのパターンとして扱う
-    const patterns =
-      firstWord.inputType === "alphabet"
-        ? firstWord.reading.split("").map((char) => [char])
-        : hiraganaToRomajiPatterns(firstWord.reading);
-    const displayRomaji =
-      firstWord.inputType === "alphabet"
-        ? firstWord.reading
-        : hiraganaToRomaji(firstWord.reading);
-
-    setTypingState({
-      patterns,
-      currentPatternIndex: 0,
-      currentInput: "",
-      typedRomaji: "",
-      displayRomaji,
-    });
-  }, [difficulty, categoryId, config.timeLimit, shuffleWords, clearWordTimer]);
+    const firstWord = selectWordByStage(allWords, 1);
+    applyWord(firstWord);
+  }, [difficulty, categoryId, config.timeLimit, clearWordTimer, applyWord]);
 
   // ゲーム開始
   const startGame = useCallback(() => {
@@ -225,10 +207,10 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
       });
     }, 1000);
 
-    if (words[0]) {
-      startWordTimer(words[0]);
+    if (currentWord) {
+      startWordTimer(currentWord);
     }
-  }, [status, words, startWordTimer]);
+  }, [status, currentWord, startWordTimer]);
 
   // ゲーム終了
   const endGame = useCallback(() => {

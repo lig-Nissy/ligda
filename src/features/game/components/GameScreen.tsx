@@ -64,6 +64,13 @@ export function GameScreen({ difficulty, categoryId, nickname, onBack }: GameScr
         <p className="text-zinc-500 dark:text-zinc-400">
           スペースキーを押してスタート
         </p>
+        <div className="w-full max-w-md p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-100">
+          <div className="font-bold mb-2">⚠ 入力時の注意</div>
+          <ul className="list-disc list-inside space-y-1">
+            <li>すべて<strong>半角</strong>で入力してください（IMEはオフ）</li>
+            <li>英単語とローマ字が混在しますが、<strong>変換はせず</strong>そのまま入力してください</li>
+          </ul>
+        </div>
         <button
           onClick={startGame}
           className="py-4 px-8 rounded-full bg-orange-500 text-white text-xl hover:bg-orange-600 transition-colors"
