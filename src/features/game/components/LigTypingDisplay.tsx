@@ -79,8 +79,19 @@ export function LigTypingDisplay({
       </div>
 
       {/* 質問 */}
-      <div className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
-        {questionType === "nickname" ? "この人のあだ名は？" : "この人の名前は？"}
+      <div className="flex flex-col items-center gap-2">
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider ${
+            questionType === "nickname"
+              ? "bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300"
+              : "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+          }`}
+        >
+          {questionType === "nickname" ? "あだ名で答える" : "名前で答える"}
+        </span>
+        <div className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
+          {questionType === "nickname" ? "この人のあだ名は？" : "この人の名前は？"}
+        </div>
       </div>
 
       {/* フィードバック表示 */}
@@ -107,7 +118,7 @@ export function LigTypingDisplay({
             onKeyDown={handleKeyDown}
             onCompositionStart={() => { isComposingRef.current = true; }}
             onCompositionEnd={() => { isComposingRef.current = false; }}
-            placeholder={questionType === "nickname" ? "あだ名を入力して Enter" : "名前を入力して Enter"}
+            placeholder={questionType === "nickname" ? "あだ名を入力（日本語/ローマ字OK）" : "名前を入力（日本語/ローマ字OK）"}
             autoComplete="off"
             className="w-full p-4 rounded-lg border-2 border-orange-300 dark:border-orange-600 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100 text-xl text-center focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
           />

@@ -173,6 +173,14 @@ export function LigGameScreen({ nickname, onBack }: LigGameScreenProps) {
           スペースキーを押してスタート
         </p>
         <div className="animate-pulse text-6xl">👤</div>
+        <div className="w-full max-w-md p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-100">
+          <div className="font-bold mb-2">⚠ 入力時の注意</div>
+          <ul className="list-disc list-inside space-y-1">
+            <li>顔写真の人物の<strong>名前</strong>または<strong>あだ名</strong>を入力します（問題ごとにどちらかが指定されます）</li>
+            <li>日本語（ひらがな・カタカナ・漢字）でも、<strong>ローマ字</strong>でもOK</li>
+            <li>入力後は <kbd className="px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-800 text-xs">Enter</kbd> で送信</li>
+          </ul>
+        </div>
         <button
           onClick={startGame}
           className="py-4 px-8 rounded-full bg-orange-500 text-white text-xl hover:bg-orange-600 transition-colors"
