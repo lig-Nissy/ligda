@@ -12,6 +12,8 @@ interface GameMenuProps {
   onStart: (difficulty: Difficulty, categoryId: string | null, nickname: string) => void;
   onDifficultyChange?: (difficulty: Difficulty) => void;
   onCategoryChange?: (categoryId: string | null) => void;
+  onReady?: () => void;
+  initialCategoryId?: string | null;
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, { name: string; speed: string }> = {
@@ -24,10 +26,10 @@ const getDifficultyDescription = (d: Difficulty): string => {
   return `${DIFFICULTY_CONFIGS[d].timeLimit}秒 / ${DIFFICULTY_LABELS[d].speed}`;
 };
 
-export function GameMenu({ onStart, onDifficultyChange, onCategoryChange }: GameMenuProps) {
+export function GameMenu({ onStart, onDifficultyChange, onCategoryChange, onReady, initialCategoryId = null }: GameMenuProps) {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(initialCategoryId);
   const [categories, setCategories] = useState<Category[]>([]);
   const [nickname, setNickname] = useState("");
 
@@ -38,9 +40,10 @@ export function GameMenu({ onStart, onDifficultyChange, onCategoryChange }: Game
         setCategories(categoriesData);
         setNickname(getSavedNickname());
       });
+      onReady?.();
     };
     loadData();
-  }, []);
+  }, [onReady]);
 
   const handleStart = () => {
     const trimmedNickname = nickname.trim() || "名無し";
