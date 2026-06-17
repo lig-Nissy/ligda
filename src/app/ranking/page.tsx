@@ -3,8 +3,9 @@
 import { useState, useEffect, startTransition, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Difficulty, RankingEntry } from "@/types";
+import { Category, Difficulty, RankingEntry } from "@/types";
 import { getRankingByDifficulty } from "@/libs/ranking";
+import { getCategories } from "@/libs/storage";
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   easy: "かんたん",
@@ -15,19 +16,32 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 function RankingContent() {
   const searchParams = useSearchParams();
   const initialDifficulty = (searchParams.get("difficulty") as Difficulty) || "normal";
+  const initialCategoryId = searchParams.get("categoryId") || null;
 
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(initialDifficulty);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initialCategoryId);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [ranking, setRanking] = useState<RankingEntry[]>([]);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      startTransition(() => {
+        setCategories(data);
+      });
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     const fetchRanking = async () => {
-      const data = await getRankingByDifficulty(selectedDifficulty);
+      const data = await getRankingByDifficulty(selectedDifficulty, selectedCategoryId);
       startTransition(() => {
         setRanking(data);
       });
     };
     fetchRanking();
-  }, [selectedDifficulty]);
+  }, [selectedDifficulty, selectedCategoryId]);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4">
@@ -47,7 +61,7 @@ function RankingContent() {
           </div>
 
           {/* 難易度タブ */}
-          <div className="flex gap-1 mb-6">
+          <div className="flex gap-1 mb-4">
             {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((d) => (
               <button
                 key={d}
@@ -61,6 +75,25 @@ function RankingContent() {
                 {DIFFICULTY_LABELS[d]}
               </button>
             ))}
+          </div>
+
+          {/* カテゴリ選択 */}
+          <div className="mb-6">
+            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              カテゴリ
+            </label>
+            <select
+              value={selectedCategoryId || ""}
+              onChange={(e) => setSelectedCategoryId(e.target.value || null)}
+              className="w-full p-2 text-sm rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-100"
+            >
+              <option value="">すべてのカテゴリ</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* ランキングリスト */}
