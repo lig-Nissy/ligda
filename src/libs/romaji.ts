@@ -93,16 +93,23 @@ const ROMAJI_MAP: Record<string, string[]> = {
   くゃ: ["qya", "qwa"],
   くゅ: ["qyu", "qwu"],
   くょ: ["qyo", "qwo"],
+  しぇ: ["sye", "she"],
   しゃ: ["sya", "sha"],
   しゅ: ["syu", "shu"],
   しょ: ["syo", "sho"],
+  ちぇ: ["tye", "che", "cye"],
   ちゃ: ["tya", "cha", "cya"],
   ちゅ: ["tyu", "chu", "cyu"],
   ちょ: ["tyo", "cho", "cyo"],
+  つぁ: ["tsa"],
+  つぃ: ["tsi"],
+  つぇ: ["tse"],
+  つぉ: ["tso"],
   てぃ: ["thi"],
   てぇ: ["the"],
   でぃ: ["dhi"],
   でぇ: ["dhe"],
+  じぇ: ["je", "zye", "jye"],
   にゃ: ["nya"],
   にゅ: ["nyu"],
   にょ: ["nyo"],
@@ -232,12 +239,20 @@ export function hiraganaToRomaji(hiragana: string): string {
  * 入力されたローマ字が正しいかチェック
  * @returns 一致した文字数、または-1（不一致）
  */
+export interface CheckRomajiResult {
+  matched: boolean;
+  advancePattern: boolean;
+  newInput: string;
+  /** 「ん」自動確定などで直前のパターンに追加確定した文字列 */
+  autoConfirmed?: string;
+}
+
 export function checkRomajiInput(
   patterns: string[][],
   currentPatternIndex: number,
   currentInput: string,
   newChar: string
-): { matched: boolean; advancePattern: boolean; newInput: string } {
+): CheckRomajiResult {
   if (currentPatternIndex >= patterns.length) {
     return { matched: false, advancePattern: false, newInput: currentInput };
   }
@@ -245,9 +260,22 @@ export function checkRomajiInput(
   const currentPatterns = patterns[currentPatternIndex];
   const testInput = currentInput + newChar;
 
+  // 「ん」の "n" 単独確定を保留するかどうかを判定
+  // 次のパターンが存在する場合、"n" だけでは確定せず後続の入力を待つ
+  // （次が子音なら特殊処理で n → 確定 → 子音送り、次が母音/y/n なら nn を要求）
+  const isNPattern =
+    currentPatterns.includes("n") &&
+    currentPatterns.includes("nn") &&
+    testInput === "n";
+  const shouldDeferN = isNPattern && currentPatternIndex + 1 < patterns.length;
+
   // 完全一致するパターンがあるか
   for (const pattern of currentPatterns) {
     if (pattern === testInput) {
+      if (shouldDeferN && pattern === "n") {
+        // "n" 単独確定は保留し、部分一致として扱う
+        return { matched: true, advancePattern: false, newInput: testInput };
+      }
       return { matched: true, advancePattern: true, newInput: "" };
     }
     // 部分一致（入力途中）
@@ -256,17 +284,18 @@ export function checkRomajiInput(
     }
   }
 
-  // 「ん」の特殊処理：「n」で次が母音以外なら確定
+  // 「ん」の特殊処理：「n」の後に子音が来た場合は「ん」を確定して次へ
   if (currentPatterns.includes("n") && currentInput === "n") {
     const nextPatterns = patterns[currentPatternIndex + 1];
     if (nextPatterns) {
-      const vowels = ["a", "i", "u", "e", "o", "y", "n"];
-      const nextStartsWithVowel = nextPatterns.some((p) =>
-        vowels.includes(p[0])
+      const ambiguousStarts = ["a", "i", "u", "e", "o", "y", "n"];
+      const nextStartsWithAmbiguous = nextPatterns.some((p) =>
+        ambiguousStarts.includes(p[0])
       );
-      if (!nextStartsWithVowel) {
-        // 「n」を確定して次のパターンへ
-        return checkRomajiInput(patterns, currentPatternIndex + 1, "", newChar);
+      if (!nextStartsWithAmbiguous) {
+        // 「n」を確定して次のパターンへ再判定。結果に autoConfirmed="n" を付与
+        const next = checkRomajiInput(patterns, currentPatternIndex + 1, "", newChar);
+        return { ...next, autoConfirmed: "n" };
       }
     }
   }

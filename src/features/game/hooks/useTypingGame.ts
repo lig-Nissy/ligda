@@ -274,9 +274,16 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         playTypeSound();
         setCorrectCount((c) => c + 1);
 
+        // 「ん」自動確定があった場合はパターンインデックスと typedRomaji を先送り
+        const autoConfirmed = result.autoConfirmed ?? "";
+        const baseIndex = currentPatternIndex + (autoConfirmed ? 1 : 0);
+        // 自動確定時は「ん」の n を確定として積む。それ以外は currentInput を保持のまま
+        const confirmedPrefix = typingState.typedRomaji + autoConfirmed;
+        const baseCurrentInput = autoConfirmed ? "" : currentInput;
+
         if (result.advancePattern) {
-          const newPatternIndex = currentPatternIndex + 1;
-          const newTypedRomaji = typingState.typedRomaji + (currentInput || "") + key;
+          const newPatternIndex = baseIndex + 1;
+          const newTypedRomaji = confirmedPrefix + baseCurrentInput + key;
 
           if (newPatternIndex >= patterns.length) {
             // ワード完了
@@ -324,7 +331,9 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
         } else {
           setTypingState({
             ...typingState,
+            currentPatternIndex: baseIndex,
             currentInput: result.newInput,
+            typedRomaji: confirmedPrefix,
           });
         }
       } else {
@@ -388,9 +397,40 @@ export function useTypingGame(difficulty: Difficulty, categoryId: string | null)
   const getTypingDisplay = useCallback(() => {
     if (!typingState) return { typed: "", remaining: "" };
 
-    const { displayRomaji, typedRomaji, currentInput } = typingState;
+    const { patterns, currentPatternIndex, typedRomaji, currentInput } = typingState;
+
+    // 「ん」パターンで次が n/母音/y 始まりのときは "nn" を優先表示
+    const ambiguousStarts = ["a", "i", "u", "e", "o", "y", "n"];
+    const pickPreferred = (candidates: string[], nextPatterns?: string[]): string => {
+      const isN = candidates.includes("n") && candidates.includes("nn");
+      if (isN && nextPatterns && nextPatterns.some((p) => ambiguousStarts.includes(p[0]))) {
+        return "nn";
+      }
+      return candidates[0];
+    };
+
+    // 現在パターン
+    let currentRemaining = "";
+    if (currentPatternIndex < patterns.length) {
+      const candidates = patterns[currentPatternIndex];
+      const nextPatterns = patterns[currentPatternIndex + 1];
+      const preferred = pickPreferred(candidates, nextPatterns);
+      // preferred が入力途中と前方一致するならそれを採用し、しない場合のみ他候補を探す
+      let matched = preferred;
+      if (currentInput && !preferred.startsWith(currentInput)) {
+        matched = candidates.find((p) => p.startsWith(currentInput)) ?? preferred;
+      }
+      currentRemaining = matched.slice(currentInput.length);
+    }
+
+    // 未来パターン
+    const futureRemaining = patterns
+      .slice(currentPatternIndex + 1)
+      .map((p, i) => pickPreferred(p, patterns[currentPatternIndex + 2 + i]))
+      .join("");
+
     const typed = typedRomaji + currentInput;
-    const remaining = displayRomaji.slice(typed.length);
+    const remaining = currentRemaining + futureRemaining;
 
     return { typed, remaining };
   }, [typingState]);
