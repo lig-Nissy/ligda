@@ -29,7 +29,7 @@ export function TypingDisplay({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg w-full max-w-lg">
+    <div className="flex flex-col items-center gap-4 p-8 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg w-full max-w-2xl">
       {/* ワード制限時間プログレスバー */}
       <div className={`w-full h-2 rounded-full ${getProgressBgColor()}`}>
         <div
@@ -39,17 +39,17 @@ export function TypingDisplay({
       </div>
 
       {/* 日本語表示 */}
-      <div className="text-4xl font-bold text-zinc-800 dark:text-zinc-100">
+      <div className="text-4xl font-bold text-zinc-800 dark:text-zinc-100 text-center break-words w-full">
         {word.text}
       </div>
 
       {/* ふりがな */}
-      <div className="text-2xl text-zinc-500 dark:text-zinc-400">
+      <div className="text-2xl text-zinc-500 dark:text-zinc-400 text-center break-words w-full">
         {word.reading}
       </div>
 
       {/* ローマ字表示 */}
-      <div className="text-3xl font-mono tracking-wider">
+      <div className="text-3xl font-mono tracking-wider text-center break-all w-full">
         <span className="text-green-500">{typed}</span>
         <span className="text-zinc-400 dark:text-zinc-500">{remaining}</span>
       </div>
