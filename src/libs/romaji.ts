@@ -84,7 +84,8 @@ const ROMAJI_MAP: Record<string, string[]> = {
   ぷ: ["pu"],
   ぺ: ["pe"],
   ぽ: ["po"],
-  // 拗音
+    // 拗音
+  うぃ: ["wi","whi"],
   うぇ: ["we"],
   うぉ: ["wo"],
   きゃ: ["kya"],
